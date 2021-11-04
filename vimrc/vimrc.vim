@@ -465,11 +465,10 @@ endif
 "'' COLORIZER                                                               ''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " Color highlight toggle.
-" Highlights the specific color code in css,
-" for example: #fff, #efefef, red etc.
-" USAGE: Ctrl+i
+" Highlights the specific color code in css, for example: #efefef, red etc.
+" USAGE: Alt+i
 " DOC:
-"     https://github.com/valsorym/vim-colorizer
+"     https://github.com/chrisbra/colorizer
 
 " Key mapping.
 nmap <A-i> :ColorToggle<CR>
