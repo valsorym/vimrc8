@@ -99,355 +99,6 @@ filetype plugin indent on
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "''                                                                         ''"
-"''                             BASE SETTINGS                               ''"
-"''                                                                         ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' MAIN                                                                    ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" BACKUP AND SWAP FILES
-set backup
-set undodir=/tmp//
-set backupdir=/tmp//
-set directory=/tmp//
-
-" INCOMPATIBILITY WITH VI
-" Use the full capabilities of vim without compatibility with vi.
-set nocompatible      " Turn arrows in the mode of INSERT.
-
-nnoremap <silent> <ESC>OA <UP>
-nnoremap <silent> <ESC>OB <DOWN>
-nnoremap <silent> <ESC>OC <RIGHT>
-nnoremap <silent> <ESC>OD <LEFT>
-inoremap <silent> <ESC>OA <UP>
-inoremap <silent> <ESC>OB <DOWN>
-inoremap <silent> <ESC>OC <RIGHT>
-inoremap <silent> <ESC>OD <LEFT>
-
-" BIPING
-" Disable beeping (aka 'bell') and window flashing, it's work
-" in the terminal and GUI mode.
-set noerrorbells visualbell t_vb=
-if has('autocmd')
-  autocmd GUIEnter * set visualbell t_vb=
-endif
-
-" ENCODING SETTINGS
-" UTF8 and type ending of line.
-set termencoding=utf-8
-set fileencodings=usc-bom,utf-8mdefault,cp1251
-set ffs=unix,dos,mac
-if has('multi_byte')
-    set encoding=utf-8
-    set fileencodings=utf-8,ucs-bom,latin1
-    setglobal fileencoding=utf-8
-    if &termencoding == ''
-        let &termencoding=&encoding
-    endif
-endif
-
-" COLOR SCHEME
-" Editor color scheme.
-syntax on
-set background=dark
-colorscheme code-theme-term
-
-" Change cursorline for gVIM.
-if $TERM != 'xterm-256color'
-    " Different cursor styles in different buffers.
-    " NERD_tree and Tagbar have a brighter cursor color when buffer is active,
-    " and dim cursor color when focus is lost.
-    " Main editor buffor has dim cursor color by default and hides the cursor
-    " when buffer lost focus.
-    setlocal nocursorline
-    augroup CursorLine
-        au!
-        au BufLeave,WinLeave,FocusLost,CmdwinLeave * call OnLeave()
-        au BufEnter,VimEnter,WinEnter,BufWinEnter,FocusGained,CmdwinEnter * call OnFocus()
-    augroup END
-
-    function! OnFocus()
-        if (bufname('%') =~ 'NERD_Tree_' || bufname('%') =~ '__Tagbar__')
-            setlocal cursorline
-            hi clear CursorLine
-            hi clear Cursor
-            hi CursorLine guibg=#003a45 guifg=#ffffff gui=bold
-            hi Cursor guibg=#003a45 guifg=#ffffff gui=bold
-        else
-            setlocal cursorline
-            hi clear CursorLine
-            hi clear Cursor
-            hi CursorLine guibg=#00202a
-            hi Cursor guibg=#555555
-            call OnLeave() " uncomment it to hide cursorline in main window
-        endif
-    endfunction
-
-    function! OnLeave()
-        if (!(bufname('%') =~ 'NERD_Tree_' || bufname('%') =~ '__Tagbar__'))
-            setlocal nocursorline
-        endif
-    endfunction
-endif
-""" colorscheme absent-contrast " rainglow/vim
-
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' EDITOR                                                                  ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" TAB KEY SETTING
-" Setting indentation when press the Tab key.
-"     smarttab    when on, a <Tab> in front of a line inserts blanks
-"                 according to 'shiftwidth'.  'tabstop' or 'softtabstop' is
-"                 used in other places. A <BS> will delete a 'shiftwidth'
-"                 worth of space at the start of the line;
-"     expandtab   In Insert mode, use the appropriate number of spaces to
-"                 insert a <Tab>. Spaces are used in indents with the '>' and
-"                 '<' commands and when 'autoindent' is on. To insert a real
-"                 tab when 'expandtab' is on, use CTRL-V<Tab>;
-"     tabstop     magnitude of the indentation for Tab style;
-"     softtabstop magnitude of the indentation for Space style;
-"     shiftwidth  the number of spaces used in the indentation
-"                 commands, such as >> or <<.
-set smarttab
-set expandtab
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
-
-" COMMAND LINE
-" Base settings.
-set cmdheight=2
-set completeopt+=menuone
-set completeopt-=preview
-
-" LINE NUMBERING
-" Show line numbers in the file.
-set number
-set numberwidth=5
-
-" TITLE SETTINGS
-" Custom title style.
-set title
-" let g:titlestring='set titlestring=VIM:\ %-25.55F titlelen=70'
-let g:titlestring='set titlestring=VIM titlelen=70'
-exec g:titlestring
-
-" STATUSBAR SETTINGS
-" Show pressed keys in normal mode.
-set showcmd
-
-" To display the status line always.
-set laststatus=2
-
-" Display typed commands in the statsubar and make autocompletion using
-" the <Tab> key. Always show the status of open file in the status bar.
-set wildmenu
-set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=C:%c%V,R:%l\ %P\ \[%{&encoding}\]
-
-" BACKSPACE
-" Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert mode:
-"     indent  allow backspacing over autoindent;
-"     eol     allow backspacing over line breaks (join lines);
-"     start   allow backspacing over the start of insert; CTRL-W and CTRL-U
-"             stop once at the start of insert.
-set backspace=indent,eol,start
-
-" WORKSPACE SIZE
-" Maximum width of text that is being inserted and horizontal line (marker)
-" for the 'tw' position. And set the wrap method of words that go beyond
-" these boundaries in width.
-set colorcolumn=80
-set nowrap
-" set textwidth=79
-" set wrap
-" set linebreak
-" set dy=lastline
-" set sidescroll=5
-" set sidescrolloff=5
-" set listchars+=precedes:<,extends:>
-
-" INDENT SETTINGS
-" Automatic indentation of newline:
-"     autoindent  copy indent from current line when starting a new line
-"                 (typing <CR> in Insert mode or when using the 'o' or 'O'
-"                 command);
-"     cindent     enables automatic C program indenting;
-"     indentexpr  expression which is evaluated to obtain the proper
-"                 indent for a line.
-set autoindent
-set indentexpr=''
-
-" SPECIAL CHAR SETTINGS
-" Display wildcards: tabs and spaces at the end.
-" Examples: ⦙·, ·, ↪\, →\, ↲, ␣, •, ⟩, ⟨
-set list listchars=tab:»·,trail:·
-
-" FILE SETTINGS
-"  Automatic refresh of the buffer if an open file is changed.
-set autoread
-
-" SYSTEM
-"  The length of time Vim waits after you stop typing before it
-"  triggers the plugin is governed by the setting updatetime.
-"  Defaults == 5000.
-"  Note: The lower the updatetime - the more glitches!
-"        For Vim 7 the value must not be less than 1000 (one thousand)!
-if has('gui_running')
-    set updatetime=128
-endif
-
-" SCROLL
-" Use Ctrl+Up and Ctrl+Down scroll a 30% of the screen up or down.
-function! ScrollQuarter(move)
-    let height=winheight(0)
-    if a:move == 'up'
-        let key='\<C-Y>'
-    else
-        let key='\<C-E>'
-    endif
-    execute 'normal! ' . height/3 . key
-endfunction
-
-imap <C-Up> <Esc>:call ScrollQuarter('up')<CR>
-nmap <C-Up> :call ScrollQuarter('up')<CR>
-imap <C-Down> <Esc>:call ScrollQuarter('down')<CR>
-nmap <C-Down> :call ScrollQuarter('down')<CR>
-
-" MOUSE
-" Left Mouse Click.
-" To change for a specific file, for example GoLang filetype:
-"     autocmd FileType go nmap <buffer> <C-LeftMouse> :<C-u>call go#def#Jump("tab", 0)<CR>
-nnoremap <silent> <C-LeftMouse> <LeftMouse>:echom 'Undefined...'<CR>
-
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' FILE ASSOCIATION                                                        ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" Correct syntax highlighting for certain file types.
-autocmd BufNewFile,BufRead *.less set filetype=less
-autocmd BufNewFile,BufRead *.html set filetype=htmldjango
-autocmd BufNewFile,BufRead *.tornado set filetype=html.tornadotmpl
-autocmd BufNewFile,BufRead *.py set filetype=python
-autocmd BufNewFile,BufRead *.pyx set filetype=cython
-autocmd BufNewFile,BufRead *.css set filetype=css
-autocmd BufNewFile,BufRead *.scss set filetype=scss
-autocmd BufNewFile,BufRead *.po set filetype=po
-autocmd BufNewFile,BufRead *.go set filetype=go
-autocmd BufNewFile,BufRead *.gohtml set filetype=gotplhtml
-autocmd BufNewFile,BufRead *.jinja set filetype=jinja
-autocmd BufNewFile,BufRead *.json set filetype=json
-autocmd BufNewFile,BufRead *.template set filetype=txt
-autocmd BufNewFile,BufRead *.gql set filetype=graphql
-autocmd BufNewFile,BufRead *.graphql set filetype=graphql
-autocmd BufNewFile,BufRead *.proto set filetype=proto
-autocmd BufNewFile,BufRead *.cfg set filetype=haproxy
-autocmd BufNewFile,BufRead *.sql set filetype=sql
-autocmd BufNewFile,BufRead *.yaml set filetype=yaml
-autocmd BufRead,BufNewFile */nginx/*.conf if &ft == '' | setfiletype nginx | endif
-
-" ... for typescript and html/css files is recommended to set 2 spaces.
-" - tabstop answers the question: how many columns of whitespace
-"   is a \t char worth? Think of a set of vertical lines running down
-"   the length of your paper.
-" - shiftwidth answers the question: how many columns of whitespace
-"   a “level of indentation” is worth?
-" - softtabstop answers the question: how many columns of whitespace is
-"   a tab keypress or a backspace keypress worth?
-" - expandtab means that you never wanna see a \t again in your
-"   file — rather, tabs keypresses will be expanded into spaces.
-autocmd FileType json setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
-autocmd FileType html setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
-autocmd FileType gotplhtml setlocal shiftwidth=4 tabstop=4
-autocmd FileType html.tornadotmpl setlocal shiftwidth=4 tabstop=4
-autocmd FileType htmldjango setlocal shiftwidth=4 tabstop=4
-autocmd FileType jinja setlocal shiftwidth=4 tabstop=4
-autocmd FileType scss setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
-autocmd FileType css setlocal shiftwidth=4 tabstop=4
-autocmd FileType typescript setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
-autocmd FileType javascript setlocal shiftwidth=4 tabstop=4
-autocmd FileType python setlocal expandtab shiftwidth=4 softtabstop=4
-autocmd FileType sh setlocal shiftwidth=4 tabstop=4
-autocmd FileType make setlocal noexpandtab
-autocmd FileType go setlocal noexpandtab
-autocmd FileType vue setlocal shiftwidth=4 tabstop=4
-autocmd FileType graphql setlocal expandtab shiftwidth=4 softtabstop=4
-autocmd FileType proto setlocal expandtab shiftwidth=4 softtabstop=4
-autocmd FileType haproxy setlocal expandtab shiftwidth=4 softtabstop=4
-autocmd FileType nginx setlocal expandtab shiftwidth=4 softtabstop=4
-autocmd FileType sql setlocal shiftwidth=4 tabstop=4
-autocmd FileType yaml setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
-
-
-" TypeScript: see TYPESCRIPT PLUGIN section
-" autocmd BufNewFile,BufRead *.ts set filetype=typescript
-
-" GoLang: see VIM-GO PLUGIN section
-" autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
-
-" When updated the buffer need update syntax highlighting too.
-" This is important when searching in large files.
-autocmd BufEnter * :syntax sync fromstart
-
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' GLOBAL KEY MAPPING                                                      ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" UNDO/REDO
-" USAGE: Ctrl+Alt+u and Ctrl+Alt+r
-nmap u :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
-nmap <C-u> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
-nmap <C-r> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
-
-imap <C-z> <Esc>:undo<CR>
-nmap <C-z> :undo<CR>
-imap <C-r> <Esc>:redo<CR>
-nmap <C-r> :redo<CR>
-
-" Copy/Paste
-" USAGE: Ctrl+Insert and Shift+Insert or Ctrl+c and Ctrl+v
-vmap <C-Insert> "+y
-vmap <S-Insert> "+p
-vmap <C-c> "+y
-imap <C-c> <ESC> "+y
-vmap <C-v> "+p
-imap <C-v> <ESC> "+p
-
-" SAVE CURRENT FILE
-" USAGE: F2
-imap <F2> <Esc>:w!<CR>
-nmap <F2> :w!<CR>
-
-" OPEN ENCODING MENU
-" USAGE: F8
-set wildmenu
-set wcm=<Tab>
-menu Encoding.utf-8 :e ++enc=utf8 <CR>
-menu Encoding.koi8-r :e ++enc=koi8-r ++ff=unix<CR>
-menu Encoding.windows-1251 :e ++enc=cp1251 ++ff=dos<CR>
-menu Encoding.cp866 :e ++enc=cp866 ++ff=dos<CR>
-menu Encoding.koi8-u :e ++enc=koi8-u ++ff=unix<CR>
-map <F8> :emenu Encoding.<TAB>
-
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' EDIT MODE                                                               ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" SEARCH
-" Ignore upper/lower cases.
-set ignorecase
-set smartcase
-
-""" Highlight found matches and remove backlight when button `Esc` is pressed.
-set hlsearch
-nnoremap <Esc> :noh<return><Esc>
-
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"''                                                                         ''"
 "''                           PLUGIN SETTINGS                               ''"
 "''                                                                         ''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -647,18 +298,24 @@ function! NERDTreeSync()
         let s:file_path=""
         let buflist=tabpagebuflist(v:lnum)
 
-        for i in buflist " < need a list
-            let s:buf_file_path=fnamemodify(bufname(i), '')
-            let s:is_tagbar_buffer=stridx(s:buf_file_path, '__Tagbar__') == 0
-            let s:is_nerdtree_buffer=stridx(s:buf_file_path, 'NERD_tree_') == 0
+        try
+            for i in buflist " < need a list
+                let s:buf_file_path=fnamemodify(bufname(i), '')
+                let s:is_tagbar_buffer=
+                            \ stridx(s:buf_file_path, '__Tagbar__') == 0
+                let s:is_nerdtree_buffer=
+                            \ stridx(s:buf_file_path, 'NERD_tree_') == 0
 
-            if bufexists(i) && !s:is_tagbar_buffer 
-                        \ && !s:is_nerdtree_buffer 
-                        \ && strlen(s:buf_file_path) > 0
-                let s:file_path = s:buf_file_path
-                break
-            endif
-        endfor
+                if bufexists(i) && !s:is_tagbar_buffer 
+                            \ && !s:is_nerdtree_buffer 
+                            \ && strlen(s:buf_file_path) > 0
+                    let s:file_path=s:buf_file_path
+                    break
+                endif
+            endfor
+        catch
+            echomsg 'Couldn`t determine the list of buffers!'
+        endtry
     endif
 
     " Set new value in titlestring.
@@ -1102,3 +759,356 @@ let g:sclow_hide_full_length=1
 let g:sclow_sbar_text="\<Space>"
 highlight SclowSbar ctermbg=NONE guibg=NONE
 
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"''                                                                         ''"
+"''                             BASE SETTINGS                               ''"
+"''                                                                         ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'' MAIN                                                                    ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" BACKUP AND SWAP FILES
+set backup
+set undodir=/tmp//
+set backupdir=/tmp//
+set directory=/tmp//
+
+" INCOMPATIBILITY WITH VI
+" Use the full capabilities of vim without compatibility with vi.
+set nocompatible      " Turn arrows in the mode of INSERT.
+
+nnoremap <silent> <ESC>OA <UP>
+nnoremap <silent> <ESC>OB <DOWN>
+nnoremap <silent> <ESC>OC <RIGHT>
+nnoremap <silent> <ESC>OD <LEFT>
+inoremap <silent> <ESC>OA <UP>
+inoremap <silent> <ESC>OB <DOWN>
+inoremap <silent> <ESC>OC <RIGHT>
+inoremap <silent> <ESC>OD <LEFT>
+
+" BIPING
+" Disable beeping (aka 'bell') and window flashing, it's work
+" in the terminal and GUI mode.
+set noerrorbells visualbell t_vb=
+if has('autocmd')
+  autocmd GUIEnter * set visualbell t_vb=
+endif
+
+" ENCODING SETTINGS
+" UTF8 and type ending of line.
+set termencoding=utf-8
+set fileencodings=usc-bom,utf-8mdefault,cp1251
+set ffs=unix,dos,mac
+if has('multi_byte')
+    set encoding=utf-8
+    set fileencodings=utf-8,ucs-bom,latin1
+    setglobal fileencoding=utf-8
+    if &termencoding == ''
+        let &termencoding=&encoding
+    endif
+endif
+
+" COLOR SCHEME
+" Editor color scheme.
+syntax on
+set background=dark
+colorscheme code-theme-term
+
+" Change cursorline for gVIM.
+if $TERM != 'xterm-256color'
+    " Different cursor styles in different buffers.
+    " NERD_tree and Tagbar have a brighter cursor color when buffer is active,
+    " and dim cursor color when focus is lost.
+    " Main editor buffor has dim cursor color by default and hides the cursor
+    " when buffer lost focus.
+    setlocal nocursorline
+    augroup CursorLine
+        au!
+        au BufLeave,WinLeave,FocusLost,CmdwinLeave * call OnLeave()
+        au BufEnter,VimEnter,WinEnter,BufWinEnter,FocusGained,CmdwinEnter * call OnFocus()
+    augroup END
+
+
+    function! OnFocus()
+        if (bufname('%') =~ 'NERD_Tree_' || bufname('%') =~ '__Tagbar__')
+            setlocal cursorline
+            hi clear CursorLine
+            hi clear Cursor
+            hi CursorLine guibg=#003a45 guifg=#ffffff gui=bold
+            hi Cursor guibg=#003a45 guifg=#ffffff gui=bold
+        else
+            setlocal cursorline
+            hi clear CursorLine
+            hi clear Cursor
+            hi CursorLine guibg=#00202a guifg=#ffffff
+            hi Cursor guibg=#3f3f3f guifg=#ffffff
+            call OnLeave() " uncomment it to hide cursorline in main window
+        endif
+    endfunction
+
+    function! OnLeave()
+        if (!(bufname('%') =~ 'NERD_Tree_' || bufname('%') =~ '__Tagbar__'))
+            setlocal nocursorline
+        endif
+    endfunction
+endif
+""" colorscheme absent-contrast " rainglow/vim
+
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'' EDITOR                                                                  ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" TAB KEY SETTING
+" Setting indentation when press the Tab key.
+"     smarttab    when on, a <Tab> in front of a line inserts blanks
+"                 according to 'shiftwidth'.  'tabstop' or 'softtabstop' is
+"                 used in other places. A <BS> will delete a 'shiftwidth'
+"                 worth of space at the start of the line;
+"     expandtab   In Insert mode, use the appropriate number of spaces to
+"                 insert a <Tab>. Spaces are used in indents with the '>' and
+"                 '<' commands and when 'autoindent' is on. To insert a real
+"                 tab when 'expandtab' is on, use CTRL-V<Tab>;
+"     tabstop     magnitude of the indentation for Tab style;
+"     softtabstop magnitude of the indentation for Space style;
+"     shiftwidth  the number of spaces used in the indentation
+"                 commands, such as >> or <<.
+set smarttab
+set expandtab
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+
+" COMMAND LINE
+" Base settings.
+set cmdheight=2
+set completeopt+=menuone
+set completeopt-=preview
+
+" LINE NUMBERING
+" Show line numbers in the file.
+" set relativenumber
+set number
+set numberwidth=5
+
+" TITLE SETTINGS
+" Custom title style.
+set title
+" let g:titlestring='set titlestring=VIM:\ %-25.55F titlelen=70'
+let g:titlestring='set titlestring=VIM titlelen=70'
+exec g:titlestring
+
+" STATUSBAR SETTINGS
+" Show pressed keys in normal mode.
+set showcmd
+
+" To display the status line always.
+set laststatus=2
+
+" Display typed commands in the statsubar and make autocompletion using
+" the <Tab> key. Always show the status of open file in the status bar.
+set wildmenu
+set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=\░\ Col:\ %c\ \░\ Row:\ %l\/%L\ \(%p%%\)\ \░\ %{(strlen(&filetype)>0)?(&filetype):'-'}\ \░\ %{&encoding}\ \░\ %{(&readonly)?'readonly':'modified'}\ 
+
+" BACKSPACE
+" Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert mode:
+"     indent  allow backspacing over autoindent;
+"     eol     allow backspacing over line breaks (join lines);
+"     start   allow backspacing over the start of insert; CTRL-W and CTRL-U
+"             stop once at the start of insert.
+set backspace=indent,eol,start
+
+" WORKSPACE SIZE
+" Maximum width of text that is being inserted and horizontal line (marker)
+" for the 'tw' position. And set the wrap method of words that go beyond
+" these boundaries in width.
+set colorcolumn=80
+set nowrap
+" set textwidth=79
+" set wrap
+" set linebreak
+" set dy=lastline
+" set sidescroll=5
+" set sidescrolloff=5
+" set listchars+=precedes:<,extends:>
+
+" INDENT SETTINGS
+" Automatic indentation of newline:
+"     autoindent  copy indent from current line when starting a new line
+"                 (typing <CR> in Insert mode or when using the 'o' or 'O'
+"                 command);
+"     cindent     enables automatic C program indenting;
+"     indentexpr  expression which is evaluated to obtain the proper
+"                 indent for a line.
+set autoindent
+set indentexpr=''
+
+" SPECIAL CHAR SETTINGS
+" Display wildcards: tabs and spaces at the end.
+" Examples: ⦙·, ·, ↪\, →\, ↲, ␣, •, ⟩, ⟨
+set list listchars=tab:»·,trail:·
+
+" FILE SETTINGS
+"  Automatic refresh of the buffer if an open file is changed.
+set autoread
+
+" SYSTEM
+"  The length of time Vim waits after you stop typing before it
+"  triggers the plugin is governed by the setting updatetime.
+"  Defaults == 5000.
+"  Note: The lower the updatetime - the more glitches!
+"        For Vim 7 the value must not be less than 1000 (one thousand)!
+if has('gui_running')
+    set updatetime=128
+endif
+
+" SCROLL
+" Use Ctrl+Up and Ctrl+Down scroll a 30% of the screen up or down.
+function! ScrollQuarter(move)
+    let height=winheight(0)
+    if a:move == 'up'
+        let key='\<C-Y>'
+    else
+        let key='\<C-E>'
+    endif
+    execute 'normal! ' . height/3 . key
+endfunction
+
+imap <C-Up> <Esc>:call ScrollQuarter('up')<CR>
+nmap <C-Up> :call ScrollQuarter('up')<CR>
+imap <C-Down> <Esc>:call ScrollQuarter('down')<CR>
+nmap <C-Down> :call ScrollQuarter('down')<CR>
+
+" MOUSE
+" Left Mouse Click.
+" To change for a specific file, for example GoLang filetype:
+"     autocmd FileType go nmap <buffer> <C-LeftMouse> :<C-u>call go#def#Jump("tab", 0)<CR>
+nnoremap <silent> <C-LeftMouse> <LeftMouse>:echom 'Undefined...'<CR>
+
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'' FILE ASSOCIATION                                                        ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" Correct syntax highlighting for certain file types.
+autocmd BufNewFile,BufRead *.less set filetype=less
+autocmd BufNewFile,BufRead *.html set filetype=htmldjango
+autocmd BufNewFile,BufRead *.tornado set filetype=html.tornadotmpl
+autocmd BufNewFile,BufRead *.py set filetype=python
+autocmd BufNewFile,BufRead *.pyx set filetype=cython
+autocmd BufNewFile,BufRead *.css set filetype=css
+autocmd BufNewFile,BufRead *.scss set filetype=scss
+autocmd BufNewFile,BufRead *.po set filetype=po
+autocmd BufNewFile,BufRead *.go set filetype=go
+autocmd BufNewFile,BufRead *.gohtml set filetype=gotplhtml
+autocmd BufNewFile,BufRead *.jinja set filetype=jinja
+autocmd BufNewFile,BufRead *.json set filetype=json
+autocmd BufNewFile,BufRead *.template set filetype=txt
+autocmd BufNewFile,BufRead *.gql set filetype=graphql
+autocmd BufNewFile,BufRead *.graphql set filetype=graphql
+autocmd BufNewFile,BufRead *.proto set filetype=proto
+autocmd BufNewFile,BufRead *.cfg set filetype=haproxy
+autocmd BufNewFile,BufRead *.sql set filetype=sql
+autocmd BufNewFile,BufRead *.yaml set filetype=yaml
+autocmd BufRead,BufNewFile */nginx/*.conf if &ft == '' | setfiletype nginx | endif
+
+" ... for typescript and html/css files is recommended to set 2 spaces.
+" - tabstop answers the question: how many columns of whitespace
+"   is a \t char worth? Think of a set of vertical lines running down
+"   the length of your paper.
+" - shiftwidth answers the question: how many columns of whitespace
+"   a “level of indentation” is worth?
+" - softtabstop answers the question: how many columns of whitespace is
+"   a tab keypress or a backspace keypress worth?
+" - expandtab means that you never wanna see a \t again in your
+"   file — rather, tabs keypresses will be expanded into spaces.
+autocmd FileType json setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
+autocmd FileType html setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
+autocmd FileType gotplhtml setlocal shiftwidth=4 tabstop=4
+autocmd FileType html.tornadotmpl setlocal shiftwidth=4 tabstop=4
+autocmd FileType htmldjango setlocal shiftwidth=4 tabstop=4
+autocmd FileType jinja setlocal shiftwidth=4 tabstop=4
+autocmd FileType scss setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
+autocmd FileType css setlocal shiftwidth=4 tabstop=4
+autocmd FileType typescript setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
+autocmd FileType javascript setlocal shiftwidth=4 tabstop=4
+autocmd FileType python setlocal expandtab shiftwidth=4 softtabstop=4
+autocmd FileType sh setlocal shiftwidth=4 tabstop=4
+autocmd FileType make setlocal noexpandtab
+autocmd FileType go setlocal noexpandtab
+autocmd FileType vue setlocal shiftwidth=4 tabstop=4
+autocmd FileType graphql setlocal expandtab shiftwidth=4 softtabstop=4
+autocmd FileType proto setlocal expandtab shiftwidth=4 softtabstop=4
+autocmd FileType haproxy setlocal expandtab shiftwidth=4 softtabstop=4
+autocmd FileType nginx setlocal expandtab shiftwidth=4 softtabstop=4
+autocmd FileType sql setlocal shiftwidth=4 tabstop=4
+autocmd FileType yaml setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
+
+
+" TypeScript: see TYPESCRIPT PLUGIN section
+" autocmd BufNewFile,BufRead *.ts set filetype=typescript
+
+" GoLang: see VIM-GO PLUGIN section
+" autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
+
+" When updated the buffer need update syntax highlighting too.
+" This is important when searching in large files.
+autocmd BufEnter * :syntax sync fromstart
+
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'' GLOBAL KEY MAPPING                                                      ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" UNDO/REDO
+" USAGE: Ctrl+Alt+u and Ctrl+Alt+r
+nmap u :echo 'For `Undo` and `Redo` use the `Ctrl+u` and `Ctrl+r` respectively!'<CR>
+nmap <C-z> :echo 'For `Undo` and `Redo` use the `Ctrl+u` and `Ctrl+r` respectively!'<CR>
+nmap <C-r> :echo 'For `Undo` and `Redo` use the `Ctrl+u` and `Ctrl+r` respectively!'<CR>
+
+imap <C-u> <Esc>:undo<CR>
+nmap <C-u> :undo<CR>
+nnoremap <C-u> <Esc>:undo<CR>
+imap <C-r> <Esc>:redo<CR>
+nmap <C-r> :redo<CR>
+nnoremap <C-r> <Esc>:redo<CR>
+
+
+" COPY/PASTE
+" USAGE: Ctrl+Insert and Shift+Insert or Ctrl+c and Ctrl+v
+vmap <C-Insert> "+y
+vmap <S-Insert> "+p
+vmap <C-c> "+y
+imap <C-c> <ESC> "+y
+vmap <C-v> "+p
+imap <C-v> <ESC> "+p
+
+" SAVE CURRENT FILE
+" USAGE: F2
+imap <F2> <Esc>:w!<CR>
+nmap <F2> :w!<CR>
+
+" OPEN ENCODING MENU
+" USAGE: F8
+set wildmenu
+set wcm=<Tab>
+menu Encoding.utf-8 :e ++enc=utf8 <CR>
+menu Encoding.koi8-r :e ++enc=koi8-r ++ff=unix<CR>
+menu Encoding.windows-1251 :e ++enc=cp1251 ++ff=dos<CR>
+menu Encoding.cp866 :e ++enc=cp866 ++ff=dos<CR>
+menu Encoding.koi8-u :e ++enc=koi8-u ++ff=unix<CR>
+map <F8> :emenu Encoding.<TAB>
+
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'' EDIT MODE                                                               ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" SEARCH
+" Ignore upper/lower cases.
+set ignorecase
+set smartcase
+
+""" Highlight found matches and remove backlight when button `Esc` is pressed.
+set hlsearch
+nnoremap <Esc> :noh<return><Esc>
