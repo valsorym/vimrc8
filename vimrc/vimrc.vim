@@ -834,7 +834,12 @@ if $TERM != 'xterm-256color'
 
 
     function! OnFocus()
-        if (bufname('%') =~ 'NERD_Tree_' || bufname('%') =~ '__Tagbar__')
+        let s:is_nerdtree_buffer=bufname('%') =~ 'NERD_Tree_'
+        let s:is_tagbar_buffer=bufname('%') =~ '__Tagbar__'
+        let s:is_rgrep_buffer=stridx(join(getline(bufname('%'), 1), ''), 
+                    \ '|| [Search') == 0
+
+        if (s:is_nerdtree_buffer || s:is_tagbar_buffer || s:is_rgrep_buffer)
             setlocal cursorline
             hi clear CursorLine
             hi clear Cursor
@@ -851,7 +856,12 @@ if $TERM != 'xterm-256color'
     endfunction
 
     function! OnLeave()
-        if (!(bufname('%') =~ 'NERD_Tree_' || bufname('%') =~ '__Tagbar__'))
+        let s:is_nerdtree_buffer=bufname('%') =~ 'NERD_Tree_'
+        let s:is_tagbar_buffer=bufname('%') =~ '__Tagbar__'
+        let s:is_rgrep_buffer=stridx(join(getline(bufname('%'), 1), ''), 
+                    \ '|| [Search') == 0
+
+        if (!(s:is_nerdtree_buffer || s:is_tagbar_buffer || s:is_rgrep_buffer))
             setlocal nocursorline
         endif
     endfunction
@@ -910,8 +920,11 @@ set laststatus=2
 
 " Display typed commands in the statsubar and make autocompletion using
 " the <Tab> key. Always show the status of open file in the status bar.
+func! Stl_filename() abort
+    return "%t"
+endfunc
 set wildmenu
-set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=\ Col:\ %c\ \｜\ Row:\ %l\/%L\ \(%p%%\)\ \｜\ %{(strlen(&filetype)>0)?(&filetype):'-'}\ \｜\ %{&encoding}\ \｜\ %{(&readonly)?'r':'rw'}\ \｜\ %{mode()=='n'?'◎':'✎'}\ \ 
+set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=\ Col:\ %c\ \｜\ Row:\ %l\/%L\ \(%p%%\)\ \｜\ %{(strlen(&filetype)>0)?(&filetype):'-'}\ \｜\ %{&encoding}\ \｜\ %{(&readonly)?'r':'rw'}\ \｜\ %{mode()=='n'?'◎':'✎'}\ 
 
 " BACKSPACE
 " Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert mode:
@@ -1063,13 +1076,13 @@ autocmd BufEnter * :syntax sync fromstart
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " UNDO/REDO
 " USAGE: Ctrl+Alt+u and Ctrl+Alt+r
-nmap u :echo 'For `Undo` and `Redo` use the `Ctrl+u` and `Ctrl+r` respectively!'<CR>
-nmap <C-z> :echo 'For `Undo` and `Redo` use the `Ctrl+u` and `Ctrl+r` respectively!'<CR>
-nmap <C-r> :echo 'For `Undo` and `Redo` use the `Ctrl+u` and `Ctrl+r` respectively!'<CR>
+nmap u :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
+nmap <C-u> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
+nmap <C-r> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
 
-imap <C-u> <Esc>:undo<CR>
-nmap <C-u> :undo<CR>
-nnoremap <C-u> <Esc>:undo<CR>
+imap <C-z> <Esc>:undo<CR>
+nmap <C-z> :undo<CR>
+nnoremap <C-z> <Esc>:undo<CR>
 imap <C-r> <Esc>:redo<CR>
 nmap <C-r> :redo<CR>
 nnoremap <C-r> <Esc>:redo<CR>
