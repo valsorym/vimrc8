@@ -25,9 +25,9 @@ do
 done
 
 # GoLang requirements.
-go get -u github.com/segmentio/golines
-go get -u github.com/jstemmer/gotags
-go get -u golang.org/x/tools/cmd/guru
+go install github.com/segmentio/golines
+go install github.com/jstemmer/gotags
+go install golang.org/x/tools/cmd/guru
 ### go install mvdan.cc/gofumpt@latest
 
 # Install fonts.

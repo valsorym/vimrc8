@@ -231,23 +231,9 @@ set numberwidth=5
 " TITLE SETTINGS
 " Custom title style.
 set title
-let g:titlestring='set titlestring=NEW\ FILE titlelen=70'
+" let g:titlestring='set titlestring=VIM:\ %-25.55F titlelen=70'
+let g:titlestring='set titlestring=VIM titlelen=70'
 exec g:titlestring
-""" set titlestring=VIM:\ %-25.55F titlelen=70
-"""
-""" " BufEnterSync change titlestring.
-""" function! BufEnterSync()
-"""     let s:is_file_buffer=strlen(expand('%')) > 0 " has title
-"""     let s:is_tagbar_buffer=stridx(expand('%'), '__Tagbar__') == 0
-"""     let s:is_nerdtree_buffer=stridx(expand('%'), 'NERD_tree_') == 0
-"""
-"""     if !s:is_file_buffer || s:is_tagbar_buffer || s:is_nerdtree_buffer
-"""         let s:title='Vim'
-"""         exec 'set titlestring=' . s:title . ' titlelen=79'
-"""     endif
-""" endfunction
-""" autocmd BufEnter * call BufEnterSync()
-""" call BufEnterSync()
 
 " STATUSBAR SETTINGS
 " Show pressed keys in normal mode.
@@ -411,17 +397,17 @@ autocmd BufEnter * :syntax sync fromstart
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " UNDO/REDO
 " USAGE: Ctrl+Alt+u and Ctrl+Alt+r
-nmap u :echo 'For `Undo` and `Redo` use the `Ctrl+Alt+u` and `Ctrl+Alt+r` respectively!'<CR>
-nmap <C-u> :echo 'For `Undo` and `Redo` use the `Ctrl+Alt+u` and `Ctrl+Alt+r` respectively!'<CR>
-nmap <C-r> :echo 'For `Undo` and `Redo` use the `Ctrl+Alt+u` and `Ctrl+Alt+r` respectively!'<CR>
+nmap u :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
+nmap <C-u> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
+nmap <C-r> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
 
-imap <C-A-u> <Esc>:undo<CR>
-nmap <C-A-u> :undo<CR>
-imap <C-A-r> <Esc>:redo<CR>
-nmap <C-A-r> :redo<CR>
+imap <C-z> <Esc>:undo<CR>
+nmap <C-z> :undo<CR>
+imap <C-r> <Esc>:redo<CR>
+nmap <C-r> :redo<CR>
 
-" COPY/PASTE
-" USAGE: Ctrl+Insert and Shift+Insert or Ctrl+C and Ctrl+V
+" Copy/Paste
+" USAGE: Ctrl+Insert and Shift+Insert or Ctrl+c and Ctrl+v
 vmap <C-Insert> "+y
 vmap <S-Insert> "+p
 vmap <C-c> "+y
@@ -537,11 +523,6 @@ nmap <C-h> :call MoveTabFirst()<CR>
 " USAGE: Ctrl+l
 imap <C-l> <Esc>:call MoveTabLast()<CR>
 nmap <C-l> :call MoveTabLast()<CR>
-
-"" " OPEN FIRST TAB
-"" " USAGE: Ctrl+z
-"" imap <C-z> <Esc>:call OpenFirstTab()<CR>
-"" nmap <C-z> :call OpenFirstTab()<CR>
 
 " TAB STYLE
 " 0. Short tabs - only filename.
@@ -722,53 +703,6 @@ function! NERDTreeSync()
     endif
 endfunction
 
-""" function! NERDTreeSync()
-"""     " The path is not synchronized if the cursor is in the Tagbar or
-"""     " NERDTree buffers.
-"""     let s:is_file_buffer=strlen(expand('%')) > 0 " has title
-"""     let s:is_tagbar_buffer=stridx(expand('%'), '__Tagbar__') == 0
-"""     let s:is_nerdtree_buffer=stridx(expand('%'), 'NERD_tree_') == 0
-"""     
-"""     if &modifiable && NERDTreeIsOpen() && !&diff
-"""                 \ && s:is_file_buffer && !s:is_tagbar_buffer
-"""                 \ && !s:is_nerdtree_buffer
-"""         try
-"""             NERDTreeTabsFind
-"""             wincmd p
-""" 
-"""             " Update title of the GUI-window.
-"""             " Add information about current project name.
-"""             let s:project_path=g:NERDTree.ForCurrentTab().getRoot().path.str()
-"""             let s:project_name=fnamemodify(s:project_path, ':t')
-"""             let s:file_name=expand('%:t')
-"""             let s:file_path=substitute(@%, s:file_name, '', '')
-"""             let s:file_path_len=strlen(s:file_path)
-"""             let s:file_path_max_len=16
-"""             let s:title=toupper(s:project_name) . '\ →\ ' . s:file_name
-""" 
-"""             " Add path for file if pathe exists.
-"""             if s:file_path_len > 0 && strpart(s:file_path, 0, 1) != '/'
-"""                 " Shorten the path and replace long prefix with
-"""                 " three dots if path for file too long.
-"""                 if s:file_path_len > s:file_path_max_len + 1
-"""                     let s:path='...'. strpart(
-"""                                 \ s:file_path,
-"""                                 \ s:file_path_len-s:file_path_max_len,
-"""                                 \ s:file_path_max_len-1)
-"""                 else
-"""                     let s:path=strpart(s:file_path, 0, s:file_path_len-1)
-"""                 endif
-""" 
-"""                 let s:title=toupper(s:project_name) . '\ →\ ' . s:path
-"""                             \ . '\ →\ ' . s:file_name
-"""             endif
-""" 
-"""             exec 'set titlestring=' . s:title . ' titlelen=79'
-"""         catch
-"""         endtry
-"""     endif
-""" endfunction
-
 " Auto sync.
 " - BufEnter when the buffer receives focus;
 " - BufWritePost after saving the buffer.
@@ -782,15 +716,6 @@ augroup END
 " NERDTreeSmartOpen smart open/close NERDTree.
 function! NERDTreeSmartOpen()
     NERDTreeTabsToggle
-    "if NERDTreeIsOpen()
-    "    NERDTreeTabsToggle
-    "else
-    "    try
-    "        NERDTreeTabsFind
-    "    catch
-    "        NERDTreeTabsToggle
-    "    endtry
-    "endif
 endfunction
 
 " Togle NERDTree.
@@ -824,8 +749,8 @@ let g:bufExplorerSortBy='fullpath'
 " Open buffer/tab list.
 " OpenBufExplorer open cell BufExplorerHorizontalSplit.
 function! OpenBufExplorer()
-    " Use only in editable buffers.
-    if &modifiable &&  strlen(expand('%')) > 0 && !&diff
+    " Use in editable buffers only.
+    if &modifiable && strlen(expand('%')) > 0 && !&diff
         try
             BufExplorerHorizontalSplit
         catch

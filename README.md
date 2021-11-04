@@ -62,8 +62,8 @@ make
 - `F12` - show/hide row numbers line;
 - `C-o` - open file;
 - `C-w`, `<-` or `->` - choose window;
-- `C-A-u` - undo (don't use just the `u` for undo);
-- `C-A-r` - redo;
+- `C-z` - undo (don't use `u` for undo);
+- `C-r` - redo;
 - `A-q` - reconnect the swap file - it helps when working with files through SSHFS, after crash;
 - `A-i` - color highlight toggle;
 - `C-x`, `a` - remove trailing blanks;
@@ -78,7 +78,7 @@ P.p.s. The other buttons correspond to the parameters by default.
 ### Tabs.
 
 - `F4` - go to 8N* tab;
-- `C-t` - list of buffers (tabs);
+- `C-t` - list of active buffers;
 - `C-n` - open new tab (or - `F7`);
 - `C-h` - move tab to first position;
 - `C-j` - move tab to left;
