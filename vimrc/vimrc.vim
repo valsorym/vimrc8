@@ -252,22 +252,31 @@ let g:NERDTreeIgnore=[
     \ '^\\.del\\.'
 \]
 
-" Do not open directory as a file.
-"   Doc: NERDTreeCustomOpenArgs 
-"        https://github.com/preservim/nerdtree/blob/master/doc/NERDTree.txt
+"" " Do not open directory as a file.
+"" "   Doc: NERDTreeCustomOpenArgs 
+"" "        https://github.com/preservim/nerdtree/blob/master/doc/NERDTree.txt
+"" let g:NERDTreeCustomOpenArgs = {
+""             \ 'file':{
+""                 \ 'reuse':'all',
+""                 \ 'where':'t',
+""                 \ 'keepopen':1,
+""                 \ 'stay':0
+""             \}, 
+""             \ 'dir':{
+""                 \ 'where':'',
+""                 \ 'reuse':'all',
+""                 \ 'keepopen':1,
+""                 \ 'stay':1
+""              \}}
 let g:NERDTreeCustomOpenArgs = {
             \ 'file':{
                 \ 'reuse':'all',
                 \ 'where':'t',
                 \ 'keepopen':1,
                 \ 'stay':0
-            \}, 
-            \ 'dir':{
-                \ 'where':'',
-                \ 'reuse':'all',
-                \ 'keepopen':1,
-                \ 'stay':1
-             \}}
+            \ }, 
+            \ 'dir':{}
+        \}
 
 " Open file in new tab by ENTER.
 let g:NERDTreeMapOpenInTab='<CR>'
