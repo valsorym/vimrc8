@@ -238,7 +238,8 @@ let g:NERDTreeWinSize=37
 " directory will be changed to the directory where stored the current file.
 """ set autochdir
 set noautochdir
-let NERDTreeChDirMode=2
+let g:NERDTreeChDirMode=2
+let g:NERDTreeMapOpenSplit='$'
 
 """ Ignore files.
 let g:NERDTreeIgnore=[
@@ -250,6 +251,26 @@ let g:NERDTreeIgnore=[
     \ '^_del\\.',
     \ '^\\.del\\.'
 \]
+
+" Do not open directory as a file.
+"   Doc: NERDTreeCustomOpenArgs 
+"        https://github.com/preservim/nerdtree/blob/master/doc/NERDTree.txt
+let g:NERDTreeCustomOpenArgs = {
+            \ 'file':{
+                \ 'reuse':'all',
+                \ 'where':'t',
+                \ 'keepopen':1,
+                \ 'stay':0
+            \}, 
+            \ 'dir':{
+                \ 'where':'',
+                \ 'reuse':'all',
+                \ 'keepopen':1,
+                \ 'stay':1
+             \}}
+
+" Open file in new tab by ENTER.
+let g:NERDTreeMapOpenInTab='<CR>'
 
 " On startup, always focus file window after startup.
 """ let g:nerdtree_tabs_smart_startup_focus=2
