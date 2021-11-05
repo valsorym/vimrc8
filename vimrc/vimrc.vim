@@ -962,7 +962,7 @@ set laststatus=2
 " Display typed commands in the statsubar and make autocompletion using
 " the <Tab> key. Always show the status of open file in the status bar.
 set wildmenu
-set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=\ Col:\ %c\ \｜\ Row:\ %l\/%L\ \(%p%%\)\ \｜\ %{(strlen(&filetype)>0)?(&filetype):'-'}\ \｜\ %{&encoding}\ \｜\ %{(&readonly)?'r':'rw'}\ \｜\ %{mode()=='n'?'◎':'✎'}\ 
+set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=\ Col:\ %c\ \｜\ Row:\ %l\/%L\ \(%p%%\)\ \｜\ %{(strlen(&filetype)>0)?(&filetype):'-'}\ \｜\ %{&encoding}\ \｜\ %{(&readonly)?'r':'rw'}\ \｜\ %{mode()=='n'?'◎':'✎'}\ \ 
 
 " BACKSPACE
 " Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert mode:
