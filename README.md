@@ -77,14 +77,8 @@ P.p.s. The other buttons correspond to the parameters by default.
 
 ### Tabs.
 
-- `F4` - go to 8N* tab;
 - `C-t` - list of active buffers;
 - `C-n` - open new tab (or - `F7`);
-- `C-h` - move tab to first position;
-- `C-j` - move tab to left;
-- `C-k` - move tab to right;
-- `C-l` - move tab to last position;
-- `C-z` - open first tab;
 - `F5` - tab prev;
 - `F6` - tab next.
 
