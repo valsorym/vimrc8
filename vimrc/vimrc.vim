@@ -342,35 +342,6 @@ function! NERDTreeSync()
                 break
             endif
         endfor
-
-        "" let buflist = []
-        "" for i in range(tabpagenr('$'))
-        ""    call extend(buflist, tabpagebuflist(i + 1))
-        "" endfor
-
-        "" echo ' >> ' . join(buflist, ' | ') . ' ||||| ' . join(tabpagebuflist(v:lnum), '|') . ' + ' . type(tabpagebuflist(v:lnum)) 
-
-        " try
-        "     for i in buflist " < need a list
-        "         let s:buf_file_path=fnamemodify(bufname(i), '')
-        "         let s:is_tagbar_buffer=
-        "                     \ stridx(s:buf_file_path, '__Tagbar__') == 0
-        "         let s:is_nerdtree_buffer=
-        "                     \ stridx(s:buf_file_path, 'NERD_tree_') == 0
-        "         let s:is_explorer_buffer=s:buf_file_path =~ '[BufExplorer]'
-
-        "         if bufexists(i) && !s:is_tagbar_buffer 
-        "                     \ && !s:is_nerdtree_buffer 
-        "                     \ && !s:is_explorer_buffer
-        "                     \ && strlen(s:buf_file_path) > 0
-        "             let s:file_path=s:buf_file_path
-        "             echo s:is_explorer_buffer . ' | ' . s:buf_file_path
-        "             break
-        "         endif
-        "     endfor
-        " catch
-        "     echomsg 'Couldn`t determine the list of buffers!'
-        " endtry
     endif
 
     " Set new value in titlestring.
