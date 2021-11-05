@@ -303,11 +303,14 @@ function! NERDTreeSync()
     let s:is_tagbar_buffer=stridx(s:file_path, '__Tagbar__') == 0
     let s:is_nerdtree_buffer=stridx(s:file_path, 'NERD_tree_') == 0
     let s:is_explorer_buffer=stridx(bufname('%'), '[BufExplorer]') == 0
+    let s:is_noname_buffer=strlen(bufname('%')) == 0
 
     " Synchronize NERDTree.
     if &modifiable && NERDTreeIsOpen() && !&diff
-                \ && strlen(s:file_path) > 0 && !s:is_tagbar_buffer
-                \ && !s:is_nerdtree_buffer && !s:is_explorer_buffer
+                \ && !s:is_tagbar_buffer
+                \ && !s:is_nerdtree_buffer 
+                \ && !s:is_explorer_buffer 
+                \ && !s:is_noname_buffer
         try
             NERDTreeTabsFind
             wincmd p
@@ -318,10 +321,13 @@ function! NERDTreeSync()
     " Update titlestring.
     " If a buffer with a file is not selected, we need to find
     " the first buffer with a file and get its name.
-    if s:is_tagbar_buffer || s:is_nerdtree_buffer || s:is_explorer_buffer
+    if s:is_tagbar_buffer 
+                \ || s:is_nerdtree_buffer
+                \ || s:is_explorer_buffer
+                \ || s:is_noname_buffer
         let s:file_path=""
         let s:buflist=tabpagebuflist(v:lnum)
-        if type(s:buflist) != 3 " not list
+        if type(s:buflist) != 3 " not a list
             let s:buflist=[]
         endif 
 
@@ -333,11 +339,15 @@ function! NERDTreeSync()
                         \ stridx(s:buf_file_path, 'NERD_tree_') == 0
             let s:is_explorer_buffer=
                         \ stridx(s:buf_file_path, '[BufExplorer]') == 0
+            let s:is_noname_buffer=
+                        \ strlen(s:buf_file_path) == 0
 
-            if bufexists(i) && !s:is_tagbar_buffer 
+            if bufexists(i)
+                        \ && !s:is_tagbar_buffer 
                         \ && !s:is_nerdtree_buffer 
                         \ && !s:is_explorer_buffer
-                        \ && strlen(s:buf_file_path) > 0
+                        \ && !s:is_noname_buffer
+                " The file was probably found.
                 let s:file_path=s:buf_file_path
                 break
             endif
