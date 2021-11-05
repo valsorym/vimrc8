@@ -329,6 +329,9 @@ function! NERDTreeSync()
         let s:buflist=tabpagebuflist(v:lnum)
         if type(s:buflist) != 3 " not a list
             let s:buflist=[]
+            for i in range(tabpagenr('$'))
+               call extend(s:buflist, tabpagebuflist(i+1))
+            endfor
         endif 
 
         for i in s:buflist " < need a list
