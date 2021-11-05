@@ -69,11 +69,10 @@ make
 - `C-x`, `a` - remove trailing blanks;
 - `C-Up` / `C-Down` - scroll a 30% of the screen up or down;
 - `C-S-?` - show which function we are inside;
-- `%` - jump to the beginning `[%` or end `]%` of a block of code.
+- `%` - jump to the beginning `[%` or end `]%` of a block of code;
+- `C-A-r` - reload vim configs.
 
-P.s. The leader button set as `.` (dot).
-
-P.p.s. The other buttons correspond to the parameters by default.
+P.s. The other buttons correspond to the parameters by default.
 
 ### Tabs.
 

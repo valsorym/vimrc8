@@ -252,34 +252,27 @@ let g:NERDTreeIgnore=[
     \ '^\\.del\\.'
 \]
 
-"" " Do not open directory as a file.
-"" "   Doc: NERDTreeCustomOpenArgs 
-"" "        https://github.com/preservim/nerdtree/blob/master/doc/NERDTree.txt
-"" let g:NERDTreeCustomOpenArgs = {
-""             \ 'file':{
-""                 \ 'reuse':'all',
-""                 \ 'where':'t',
-""                 \ 'keepopen':1,
-""                 \ 'stay':0
-""             \}, 
-""             \ 'dir':{
-""                 \ 'where':'',
-""                 \ 'reuse':'all',
-""                 \ 'keepopen':1,
-""                 \ 'stay':1
-""              \}}
+" Do not open directory as a file.
+" Doc: https://github.com/preservim/nerdtree/blob/master/doc/NERDTree.txt#L1283
+" Example:
+" let g:NERDTreeCustomOpenArgs = {
+"             \ 'file':{'reuse':'all', 'where':'t', 'keepopen':1, 'stay':0}, 
+"             \ 'dir':{'where':'', 'reuse':'all', 'keepopen':1, 'stay':1 }
+"         \ }
 let g:NERDTreeCustomOpenArgs = {
-            \ 'file':{
-                \ 'reuse':'all',
-                \ 'where':'t',
-                \ 'keepopen':1,
-                \ 'stay':0
-            \ }, 
-            \ 'dir':{}
-        \}
+    \ 'file':{
+        \ 'reuse':'all',
+        \ 'where':'t',
+        \ 'keepopen':1,
+        \ 'stay':0
+    \ }, 
+    \ 'dir':{}
+\}
 
-" Open file in new tab by ENTER.
-let g:NERDTreeMapOpenInTab='<CR>'
+" Change keymap.
+" Doc: https://github.com/preservim/nerdtree/blob/master/plugin/NERD_tree.vim#L99
+let g:NERDTreeMapOpenInTab='<CR>' " def `t` - open file in new tab by ENTER.
+let g:NERDTreeMapOpenExpl='' " def `e`
 
 " On startup, always focus file window after startup.
 """ let g:nerdtree_tabs_smart_startup_focus=2
@@ -309,11 +302,12 @@ function! NERDTreeSync()
     let s:file_path=expand('%')
     let s:is_tagbar_buffer=stridx(s:file_path, '__Tagbar__') == 0
     let s:is_nerdtree_buffer=stridx(s:file_path, 'NERD_tree_') == 0
+    let s:is_explorer_buffer=stridx(bufname('%'), '[BufExplorer]') == 0
 
     " Synchronize NERDTree.
     if &modifiable && NERDTreeIsOpen() && !&diff
                 \ && strlen(s:file_path) > 0 && !s:is_tagbar_buffer
-                \ && !s:is_nerdtree_buffer
+                \ && !s:is_nerdtree_buffer && !s:is_explorer_buffer
         try
             NERDTreeTabsFind
             wincmd p
@@ -324,28 +318,59 @@ function! NERDTreeSync()
     " Update titlestring.
     " If a buffer with a file is not selected, we need to find
     " the first buffer with a file and get its name.
-    if s:is_tagbar_buffer || s:is_nerdtree_buffer
+    if s:is_tagbar_buffer || s:is_nerdtree_buffer || s:is_explorer_buffer
         let s:file_path=""
-        let buflist=tabpagebuflist(v:lnum)
+        let s:buflist=tabpagebuflist(v:lnum)
+        if type(s:buflist) != 3 " not list
+            let s:buflist=[]
+        endif 
 
-        try
-            for i in buflist " < need a list
-                let s:buf_file_path=fnamemodify(bufname(i), '')
-                let s:is_tagbar_buffer=
-                            \ stridx(s:buf_file_path, '__Tagbar__') == 0
-                let s:is_nerdtree_buffer=
-                            \ stridx(s:buf_file_path, 'NERD_tree_') == 0
+        for i in s:buflist " < need a list
+            let s:buf_file_path=fnamemodify(bufname(i), '')
+            let s:is_tagbar_buffer=
+                        \ stridx(s:buf_file_path, '__Tagbar__') == 0
+            let s:is_nerdtree_buffer=
+                        \ stridx(s:buf_file_path, 'NERD_tree_') == 0
+            let s:is_explorer_buffer=
+                        \ stridx(s:buf_file_path, '[BufExplorer]') == 0
 
-                if bufexists(i) && !s:is_tagbar_buffer 
-                            \ && !s:is_nerdtree_buffer 
-                            \ && strlen(s:buf_file_path) > 0
-                    let s:file_path=s:buf_file_path
-                    break
-                endif
-            endfor
-        catch
-            echomsg 'Couldn`t determine the list of buffers!'
-        endtry
+            if bufexists(i) && !s:is_tagbar_buffer 
+                        \ && !s:is_nerdtree_buffer 
+                        \ && !s:is_explorer_buffer
+                        \ && strlen(s:buf_file_path) > 0
+                let s:file_path=s:buf_file_path
+                break
+            endif
+        endfor
+
+        "" let buflist = []
+        "" for i in range(tabpagenr('$'))
+        ""    call extend(buflist, tabpagebuflist(i + 1))
+        "" endfor
+
+        "" echo ' >> ' . join(buflist, ' | ') . ' ||||| ' . join(tabpagebuflist(v:lnum), '|') . ' + ' . type(tabpagebuflist(v:lnum)) 
+
+        " try
+        "     for i in buflist " < need a list
+        "         let s:buf_file_path=fnamemodify(bufname(i), '')
+        "         let s:is_tagbar_buffer=
+        "                     \ stridx(s:buf_file_path, '__Tagbar__') == 0
+        "         let s:is_nerdtree_buffer=
+        "                     \ stridx(s:buf_file_path, 'NERD_tree_') == 0
+        "         let s:is_explorer_buffer=s:buf_file_path =~ '[BufExplorer]'
+
+        "         if bufexists(i) && !s:is_tagbar_buffer 
+        "                     \ && !s:is_nerdtree_buffer 
+        "                     \ && !s:is_explorer_buffer
+        "                     \ && strlen(s:buf_file_path) > 0
+        "             let s:file_path=s:buf_file_path
+        "             echo s:is_explorer_buffer . ' | ' . s:buf_file_path
+        "             break
+        "         endif
+        "     endfor
+        " catch
+        "     echomsg 'Couldn`t determine the list of buffers!'
+        " endtry
     endif
 
     " Set new value in titlestring.
@@ -360,6 +385,10 @@ function! NERDTreeSync()
             let s:file_path_len=strlen(s:file_path)
             let s:file_path_max_len=16
             let s:title=toupper(s:project_name) . '\ →\ ' . s:file_name
+
+            if strlen(s:project_name) == 0
+                let s:title=s:file_name
+            endif
 
             " Add path for file if pathe exists.
             if s:file_path_len > 0 && strpart(s:file_path, 0, 1) != '/'
@@ -865,10 +894,12 @@ if $TERM != 'xterm-256color'
     function! OnFocus()
         let s:is_nerdtree_buffer=bufname('%') =~ 'NERD_Tree_'
         let s:is_tagbar_buffer=bufname('%') =~ '__Tagbar__'
+        let s:is_explorer_buffer=stridx(bufname('%'), '[BufExplorer]') == 0
         let s:is_rgrep_buffer=stridx(join(getline(bufname('%'), 1), ''), 
                     \ '|| [Search') == 0
 
-        if (s:is_nerdtree_buffer || s:is_tagbar_buffer || s:is_rgrep_buffer)
+        if (s:is_nerdtree_buffer || s:is_tagbar_buffer
+                    \ || s:is_rgrep_buffer || s:is_explorer_buffer)
             setlocal cursorline
             hi clear CursorLine
             hi clear Cursor
@@ -887,10 +918,12 @@ if $TERM != 'xterm-256color'
     function! OnLeave()
         let s:is_nerdtree_buffer=bufname('%') =~ 'NERD_Tree_'
         let s:is_tagbar_buffer=bufname('%') =~ '__Tagbar__'
+        let s:is_explorer_buffer=stridx(bufname('%'), '[BufExplorer]') == 0
         let s:is_rgrep_buffer=stridx(join(getline(bufname('%'), 1), ''), 
                     \ '|| [Search') == 0
 
-        if (!(s:is_nerdtree_buffer || s:is_tagbar_buffer || s:is_rgrep_buffer))
+        if (!(s:is_nerdtree_buffer || s:is_tagbar_buffer 
+                    \ || s:is_rgrep_buffer || s:is_explorer_buffer))
             setlocal nocursorline
         endif
     endfunction
@@ -901,6 +934,14 @@ endif
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' EDITOR                                                                  ''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" CONFIGS
+" UpdateSource updates configurations of vim.
+func! UpdateSource() abort
+    source ~/.vimrc | source ~/.gvimrc
+endfunc
+imap <C-A-r> <Esc>:call UpdateSource()<CR>
+nmap <C-A-r> :call UpdateSource()<CR>
+
 " TAB KEY SETTING
 " Setting indentation when press the Tab key.
 "     smarttab    when on, a <Tab> in front of a line inserts blanks
@@ -949,9 +990,6 @@ set laststatus=2
 
 " Display typed commands in the statsubar and make autocompletion using
 " the <Tab> key. Always show the status of open file in the status bar.
-func! Stl_filename() abort
-    return "%t"
-endfunc
 set wildmenu
 set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=\ Col:\ %c\ \｜\ Row:\ %l\/%L\ \(%p%%\)\ \｜\ %{(strlen(&filetype)>0)?(&filetype):'-'}\ \｜\ %{&encoding}\ \｜\ %{(&readonly)?'r':'rw'}\ \｜\ %{mode()=='n'?'◎':'✎'}\ 
 
