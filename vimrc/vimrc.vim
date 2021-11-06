@@ -954,9 +954,10 @@ set completeopt-=preview
 
 " LINE NUMBERING
 " Show line numbers in the file.
-" set relativenumber
-set number
-set numberwidth=5
+" set number
+" set number relativenumber
+set relativenumber
+set numberwidth=2
 
 " TITLE SETTINGS
 " Custom title style.
@@ -975,7 +976,60 @@ set laststatus=2
 " Display typed commands in the statsubar and make autocompletion using
 " the <Tab> key. Always show the status of open file in the status bar.
 set wildmenu
-set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=\ Col:\ %c\ \｜\ Row:\ %l\/%L\ \(%p%%\)\ \｜\ %{(strlen(&filetype)>0)?(&filetype):'-'}\ \｜\ %{&encoding}\ \｜\ %{(&readonly)?'r':'rw'}\ \｜\ %{mode()=='n'?'◎':'✎'}\ \ 
+function! SelectCount()
+    return ' ' . join(getpos("'<"), ',') . ' and ' . join(getpos("'>"), ',') 
+endfunction
+
+" STLWordCount returns string as <current word number>/<max words in file>.
+function STLWordCount()
+    let s:word_count=wordcount().words
+    if has_key(wordcount(),'visual_words')
+        let s:word_count=wordcount().visual_words."/".wordcount().words " count selected words
+    else
+        let s:word_count=wordcount().cursor_words."/".wordcount().words " or shows words 'so far'
+    endif
+    return s:word_count
+endfunction
+
+" STLReadOnly returns string 'r' for readonly file and 'rw' for any.
+function STLReadOnly()
+    return &readonly ? "r":"rw" 
+endfunc
+
+" STLGitStatus returns git status as pictur: 
+"   ☀ - is commited;
+"   🌥 - has edits;
+"   🌩 - has a lot of edits;
+"   🌪 - too many edits.
+function STLGitStatus()
+    let s:status=substitute(system('git status -s'), '\n', '  |  ', 'g')
+    if s:status=~'not a git repository' 
+                \ || s:status=~'fatal:' 
+                \ || s:status=~'command not found'
+        return ''
+    endif
+
+    let s:modcount=count(s:status, '  |  ')
+    if s:modcount == 0
+        return '☀'
+    elseif s:modcount < 3
+        return '🌥'
+    elseif s:modcount < 7
+        return '🌩'
+    endif
+
+    return '🌪'
+endfunction
+
+set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=
+set statusline+=%{(STLWordCount()!='0/0')?'\ Word:\ '.STLWordCount().'\ \｜':''}
+set statusline+=\ Col:\ %c\ \｜
+set statusline+=\ Row:\ %l\/%L\ \(%p%%\)\ \｜
+set statusline+=%{(strlen(&filetype)>0)?'\ '.(&filetype).'\ \｜':''}
+set statusline+=%{(strlen(&filetype)>0)?'\ '.(&encoding).'\ \｜':''}
+set statusline+=%{(strlen(&filetype)>0)?'\ '.STLReadOnly().'\ \｜':''}
+set statusline+=%{(STLGitStatus()!='')?'\ '.STLGitStatus().'\ \｜':''}
+set statusline+=\ %{mode()=='n'?'◎':'✎'}\ \ 
 
 " Colorize statusline.
 " 1. Add color scheme into vim-theme:
