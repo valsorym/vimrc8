@@ -954,9 +954,9 @@ set completeopt-=preview
 
 " LINE NUMBERING
 " Show line numbers in the file.
-" set number
+set number
 " set number relativenumber
-set relativenumber
+" set relativenumber
 set numberwidth=2
 
 " TITLE SETTINGS
@@ -976,10 +976,8 @@ set laststatus=2
 " Display typed commands in the statsubar and make autocompletion using
 " the <Tab> key. Always show the status of open file in the status bar.
 set wildmenu
-function! SelectCount()
-    return ' ' . join(getpos("'<"), ',') . ' and ' . join(getpos("'>"), ',') 
-endfunction
 
+" STATUSLINE
 " STLWordCount returns string as <current word number>/<max words in file>.
 function STLWordCount()
     let s:word_count=wordcount().words
@@ -996,38 +994,63 @@ function STLReadOnly()
     return &readonly ? "r":"rw" 
 endfunc
 
-" STLGitStatus returns git status as pictur: 
-"   ☀ - is commited;
-"   🌥 - has edits;
-"   🌩 - has a lot of edits;
-"   🌪 - too many edits.
+" STLGitStatus returns git status. 
+" For example:
+"   ↯ master* - dasn't pushed to origin, master branch with uncommited files.
+"   master* - master branch with uncommited files (pushed commited files);
+"   master - master branch, pushed to origin;
+"   etc...
+" Note: Using STLGitStatus directly in the statusline
+"       will delays the text input. For this reason,
+"       we use global variables to cache the result.
+let g:gitstat_file_path=expand('%')
+let g:gitstat_last_result=''
+augroup GitStatusUpdate
+    autocmd BufWritePost,BufEnter,VimEnter * silent :let g:gitstat_file_path=''
+    autocmd DirChanged global :let g:gitstat_file_path=''
+augroup end
 function STLGitStatus()
+    if expand('%') == g:gitstat_file_path
+        return g:gitstat_last_result
+    endif
+
+    " Get git status.
     let s:status=substitute(system('git status -s'), '\n', '  |  ', 'g')
     if s:status=~'not a git repository' 
                 \ || s:status=~'fatal:' 
                 \ || s:status=~'command not found'
-        return ''
+        let g:gitstat_last_result=''
+        let g:gitstat_file_path=expand('%')
+        return g:gitstat_last_result
     endif
 
+    " Get current branch.
+    let s:branch=substitute(
+                \ system('git rev-parse --abbrev-ref HEAD'),
+                \ '\n', '', 'g')
+
+    " Check the number of modified files.
     let s:modcount=count(s:status, '  |  ')
-    if s:modcount == 0
-        return '☀'
-    elseif s:modcount < 3
-        return '🌥'
-    elseif s:modcount < 7
-        return '🌩'
-    endif
 
-    return '🌪'
+    " Check sync with origin.
+    let s:local=substitute(system('git rev-parse '.s:branch), '\n', '', 'g')
+    let s:origin=substitute(
+                \ system('git rev-parse origin/'.s:branch),
+                \ '\n', '', 'g')
+
+    let g:gitstat_last_result=(s:local!=s:origin?'↯ ':'') . s:branch 
+                \ . (s:modcount!=0?'*':'')
+    let g:gitstat_file_path=expand('%')
+    return g:gitstat_last_result
 endfunction
 
 set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=
-set statusline+=%{(STLWordCount()!='0/0')?'\ Word:\ '.STLWordCount().'\ \｜':''}
+""" set statusline+=%{(STLWordCount()!='0/0')?'\ Word:\ '.STLWordCount().'\ \｜':''}
 set statusline+=\ Col:\ %c\ \｜
 set statusline+=\ Row:\ %l\/%L\ \(%p%%\)\ \｜
 set statusline+=%{(strlen(&filetype)>0)?'\ '.(&filetype).'\ \｜':''}
 set statusline+=%{(strlen(&filetype)>0)?'\ '.(&encoding).'\ \｜':''}
-set statusline+=%{(strlen(&filetype)>0)?'\ '.STLReadOnly().'\ \｜':''}
+""" set statusline+=%{(strlen(&filetype)>0)?'\ '.STLReadOnly().'\ \｜':''}
 set statusline+=%{(STLGitStatus()!='')?'\ '.STLGitStatus().'\ \｜':''}
 set statusline+=\ %{mode()=='n'?'◎':'✎'}\ \ 
 
@@ -1194,10 +1217,11 @@ autocmd BufEnter * :syntax sync fromstart
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " UNDO/REDO
 " USAGE: Ctrl+Alt+u and Ctrl+Alt+r
-nmap u :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
+"nmap u :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
 nmap <C-u> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
 nmap <C-r> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
 
+nmap u :undo<CR>
 imap <C-z> <Esc>:undo<CR>
 nmap <C-z> :undo<CR>
 nnoremap <C-z> <Esc>:undo<CR>
