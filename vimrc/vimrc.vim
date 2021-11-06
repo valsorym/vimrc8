@@ -1122,19 +1122,32 @@ endif
 " SCROLL
 " Use Ctrl+Up and Ctrl+Down scroll a 30% of the screen up or down.
 function! ScrollQuarter(move)
-    let height=winheight(0)
+    let s:height=winheight(0)
+    "if a:move == 'up'
+    "    let key='\<C-Y>'
+    "else
+    "    let key='\<C-E>'
+    "endif
+    "execute 'normal! ' . float2nr(round(s:height*0.3)) . key
     if a:move == 'up'
-        let key='\<C-Y>'
-    else
-        let key='\<C-E>'
+        let prep='L'
+        let key='gk'
+        let post='zb'
+    elseif a:move == 'down'
+        let prep='H'
+        let key='gj'
+        let post='zt'
     endif
-    execute 'normal! ' . height/3 . key
+    execute 'normal! ' . prep . float2nr(round(s:height*0.55)) . key . post
 endfunction
 
 imap <C-Up> <Esc>:call ScrollQuarter('up')<CR>
 nmap <C-Up> :call ScrollQuarter('up')<CR>
 imap <C-Down> <Esc>:call ScrollQuarter('down')<CR>
 nmap <C-Down> :call ScrollQuarter('down')<CR>
+
+"" nnoremap <silent> <up> :call ScrollQuarter('up')<CR>
+"" nnoremap <silent> <down> :call ScrollQuarter('down')<CR>
 
 " MOUSE
 " Left Mouse Click.
