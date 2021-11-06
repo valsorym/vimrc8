@@ -1155,6 +1155,8 @@ nmap <C-Down> :call ScrollQuarter('down')<CR>
 "     autocmd FileType go nmap <buffer> <C-LeftMouse> :<C-u>call go#def#Jump("tab", 0)<CR>
 nnoremap <silent> <C-LeftMouse> <LeftMouse>:echom 'Undefined...'<CR>
 
+" http://vimdoc.sourceforge.net/htmldoc/options.html#'mouse'
+set mouse=nicr " no more visual mode from using mouse
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' FILE ASSOCIATION                                                        ''"
