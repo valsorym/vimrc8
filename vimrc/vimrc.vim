@@ -977,6 +977,19 @@ set laststatus=2
 set wildmenu
 set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=\ Col:\ %c\ \｜\ Row:\ %l\/%L\ \(%p%%\)\ \｜\ %{(strlen(&filetype)>0)?(&filetype):'-'}\ \｜\ %{&encoding}\ \｜\ %{(&readonly)?'r':'rw'}\ \｜\ %{mode()=='n'?'◎':'✎'}\ \ 
 
+" Colorize statusline.
+" 1. Add color scheme into vim-theme:
+"   hi STLNormalColor guifg=Black guibg=Green ctermbg=46 ctermfg=0
+"   hi STLInsertColor guifg=Black guibg=Cyan ctermbg=51 ctermfg=0
+"   hi STLReplaceColor guifg=Black guibg=maroon1 ctermbg=165 ctermfg=0
+"   hi STLVisualColor guifg=Black guibg=Orange ctermbg=202 ctermfg=0
+"
+" 2. Use color-scheme:
+"   set statusline+=%#STLNormalColor#%{(mode()=='n')?'\ \ \ ◎\ \ \ ':''}
+"   set statusline+=%#STLInsertColor#%{(mode()=='i')?'\ \ \ ✎\ \ \ ':''}
+"   set statusline+=%#STLReplaceColor#%{(mode()=='R')?'\ \ \ ✎\ \ \ ':''}
+"   set statusline+=%#STLVisualColor#%{(mode()=='v')?'\ \ \ ✎\ \ \ ':''}
+
 " BACKSPACE
 " Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert mode:
 "     indent  allow backspacing over autoindent;
