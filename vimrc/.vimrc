@@ -805,7 +805,6 @@ let g:sclow_bar_right_offset=-1
 let g:sclow_hide_full_length=1
 
 let g:sclow_sbar_text="\<Space>"
-highlight SclowSbar ctermbg=NONE guibg=NONE
 
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -876,10 +875,10 @@ if $TERM != 'xterm-256color'
     setlocal nocursorline
     augroup CursorLine
         au!
-        " au BufLeave,WinLeave,FocusLost,CmdwinLeave * call OnLeave()
-        " au BufEnter,VimEnter,WinEnter,BufWinEnter,FocusGained,CmdwinEnter * call OnFocus()
-        au BufLeave * call OnLeave()
-        au BufEnter * call OnFocus()
+        "au BufLeave,WinLeave,FocusLost,CmdwinLeave * call OnLeave()
+        "au BufEnter,VimEnter,WinEnter,BufWinEnter,FocusGained,CmdwinEnter * call OnFocus()
+        au BufLeave,FocusLost * call OnLeave()
+        au BufEnter,FocusGained * call OnFocus()
     augroup END
 
     function! OnFocus()
@@ -890,10 +889,10 @@ if $TERM != 'xterm-256color'
             hi clear Cursor
             hi clear Search
 
-            hi Cursor ctermfg=38 ctermbg=38 cterm=NONE guifg=NONE guibg=#003a45 gui=bold 
-            hi CursorLine ctermfg=256 ctermbg=38 cterm=bold guifg=NONE guibg=#003a45 gui=bold 
-            hi CursorLineNr ctermfg=256 ctermbg=38 cterm=bold guifg=NONE guibg=#003a45 gui=bold 
-            hi Search NONE
+            hi Cursor cterm=NONE ctermfg=38 ctermbg=38 gui=NONE guifg=NONE guibg=#656565
+            hi CursorLine cterm=bold ctermfg=256 ctermbg=38 gui=bold guifg=#ffffff guibg=#004663
+            hi CursorLineNr cterm=bold ctermfg=226 ctermbg=38 gui=NONE guifg=#7c8884 guibg=#23343d
+            hi Search cterm=bold ctermfg=58 ctermbg=108 gui=bold guifg=NONE guibg=NONE
         else
             setlocal cursorline
             hi clear CursorLine
@@ -903,7 +902,7 @@ if $TERM != 'xterm-256color'
             hi Cursor ctermfg=38 ctermbg=38 cterm=NONE guifg=NONE guibg=#3f3f3f gui=bold 
             hi CursorLine ctermfg=256 ctermbg=38 cterm=bold guifg=NONE guibg=#00202a gui=bold 
             hi CursorLineNr ctermfg=256 ctermbg=38 cterm=bold guifg=NONE guibg=#003a45 gui=bold 
-            hi Search guifg=NONE guibg=NONE gui=bold
+            hi Search cterm=underline guifg=NONE gui=bold guibg=NONE
             call OnLeave() " uncomment it to hide cursorline in main window
         endif
         " execute 'redraw'
