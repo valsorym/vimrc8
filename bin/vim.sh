@@ -12,8 +12,8 @@ rm -Rf $HOME/.vim \
        $HOME/.vimrc \
        $HOME/.gvimrc
 mkdir -p $HOME/.vim/bundle
-cp -Rf $BASE_DIR/vimrc/vimrc.vim $HOME/.vimrc
-cp -Rf $BASE_DIR/vimrc/gvimrc.vim $HOME/.gvimrc
+cp -Rf $BASE_DIR/vimrc/.vimrc $HOME/.vimrc
+cp -Rf $BASE_DIR/vimrc/.gvimrc $HOME/.gvimrc
 
 # Scan ~/.vimrc and find all plugins that must be installed use vundle.
 PLUGINS=`cat $HOME/.vimrc | grep "Plugin '*'" | cut -d"'" -f2`

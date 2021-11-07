@@ -864,7 +864,7 @@ endif
 " Editor color scheme.
 syntax on
 set background=dark
-colorscheme code-theme-term
+colorscheme code
 
 " Change cursorline for gVIM.
 if $TERM != 'xterm-256color'
@@ -876,8 +876,10 @@ if $TERM != 'xterm-256color'
     setlocal nocursorline
     augroup CursorLine
         au!
-        au BufLeave,WinLeave,FocusLost,CmdwinLeave * call OnLeave()
-        au BufEnter,VimEnter,WinEnter,BufWinEnter,FocusGained,CmdwinEnter * call OnFocus()
+        " au BufLeave,WinLeave,FocusLost,CmdwinLeave * call OnLeave()
+        " au BufEnter,VimEnter,WinEnter,BufWinEnter,FocusGained,CmdwinEnter * call OnFocus()
+        au BufLeave,WinLeave * call OnLeave()
+        au BufEnter,WinEnter * call OnFocus()
     augroup END
 
     function! OnFocus()
