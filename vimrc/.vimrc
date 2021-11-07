@@ -878,8 +878,8 @@ if $TERM != 'xterm-256color'
         au!
         " au BufLeave,WinLeave,FocusLost,CmdwinLeave * call OnLeave()
         " au BufEnter,VimEnter,WinEnter,BufWinEnter,FocusGained,CmdwinEnter * call OnFocus()
-        au BufLeave,WinLeave * call OnLeave()
-        au BufEnter,WinEnter * call OnFocus()
+        au BufLeave * call OnLeave()
+        au BufEnter * call OnFocus()
     augroup END
 
     function! OnFocus()
@@ -1009,7 +1009,7 @@ endfunc
 let g:gitstat_file_path=expand('%')
 let g:gitstat_last_result=''
 augroup GitStatusUpdate
-    autocmd BufWritePost,BufEnter,VimEnter * silent :let g:gitstat_file_path=''
+    autocmd BufWritePost,BufEnter * silent :let g:gitstat_file_path=''
     autocmd DirChanged global :let g:gitstat_file_path=''
 augroup end
 function STLGitStatus()
@@ -1227,7 +1227,12 @@ autocmd FileType yaml setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
 
 " When updated the buffer need update syntax highlighting too.
 " This is important when searching in large files.
-autocmd BufEnter * :syntax sync fromstart
+function SyncFromStart() abort
+    set lazyredraw
+    silent execute 'syntax sync fromstart'
+    set nolazyredraw
+endfunction
+autocmd BufEnter,BufWritePost * :call SyncFromStart()
 
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -1235,7 +1240,6 @@ autocmd BufEnter * :syntax sync fromstart
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " UNDO/REDO
 " USAGE: Ctrl+Alt+u and Ctrl+Alt+r
-"nmap u :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
 nmap <C-u> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
 nmap <C-r> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
 
