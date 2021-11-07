@@ -62,7 +62,7 @@ make
 - `F12` - show/hide row numbers line;
 - `C-o` - open file;
 - `C-w`, `<-` or `->` - choose window;
-- `C-z` - undo (don't use `u` for undo);
+- `C-z` or `u` - undo;
 - `C-r` - redo;
 - `A-q` - reconnect the swap file - it helps when working with files through SSHFS, after crash;
 - `A-i` - color highlight toggle;
