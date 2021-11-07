@@ -883,7 +883,7 @@ if $TERM != 'xterm-256color'
     augroup END
 
     function! OnFocus()
-        "set lazyredraw
+        set lazyredraw
         if IsTechBuffer(bufname('%'), 1)
             setlocal cursorline
             hi clear CursorLine
@@ -906,7 +906,8 @@ if $TERM != 'xterm-256color'
             hi Search guifg=NONE guibg=NONE gui=bold
             call OnLeave() " uncomment it to hide cursorline in main window
         endif
-        "set nolazyredraw
+        " execute 'redraw'
+        set nolazyredraw
     endfunction
 
     function! OnLeave()
@@ -1228,8 +1229,9 @@ autocmd FileType yaml setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
 " When updated the buffer need update syntax highlighting too.
 " This is important when searching in large files.
 function SyncFromStart() abort
-    set lazyredraw
+    set lazyredraw " https://vimhelp.org/options.txt.html#%27lazyredraw%27
     silent execute 'syntax sync fromstart'
+    " execute 'redraw'
     set nolazyredraw
 endfunction
 autocmd BufEnter,BufWritePost * :call SyncFromStart()
