@@ -1168,6 +1168,7 @@ set mouse=nicr " no more visual mode from using mouse
 " Correct syntax highlighting for certain file types.
 autocmd BufNewFile,BufRead *.less set filetype=less
 autocmd BufNewFile,BufRead *.html set filetype=htmldjango
+autocmd BufNewFile,BufRead *.md set filetype=markdown
 autocmd BufNewFile,BufRead *.tornado set filetype=html.tornadotmpl
 autocmd BufNewFile,BufRead *.py set filetype=python
 autocmd BufNewFile,BufRead *.pyx set filetype=cython
@@ -1199,6 +1200,7 @@ autocmd BufRead,BufNewFile */nginx/*.conf if &ft == '' | setfiletype nginx | end
 "   file — rather, tabs keypresses will be expanded into spaces.
 autocmd FileType json setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
 autocmd FileType html setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
+autocmd FileType markdown setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
 autocmd FileType gotplhtml setlocal shiftwidth=4 tabstop=4
 autocmd FileType html.tornadotmpl setlocal shiftwidth=4 tabstop=4
 autocmd FileType htmldjango setlocal shiftwidth=4 tabstop=4
