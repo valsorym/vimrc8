@@ -768,13 +768,13 @@ let g:matchup_matchparen_stopline = 512
 let g:matchup_matchparen_timeout = 256
 let g:matchup_matchparen_insert_timeout = 64
 
-nnoremap <C-S-?> :<C-U>MatchupWhereAmI?<cr>
-augroup matchup_matchparen_highlight
+nnoremap <C-S-?> :<C-u>MatchupWhereAmI?<cr>
+augroup matchupMatchparenHighlight
     autocmd!
-    autocmd ColorScheme * hi MatchParen    cterm=Bold gui=Bold  " ctermbg=LightCyan guibg=#181818 cterm=None gui=None
-    autocmd ColorScheme * hi MatchWord     cterm=Bold gui=Bold  " ctermbg=LightCyan guibg=#181818 cterm=None gui=None
-    autocmd ColorScheme * hi MatchParenCur cterm=Bold gui=Bold  " ctermbg=LightCyan guibg=#181818 cterm=None gui=None
-    autocmd ColorScheme * hi MatchWordCur  cterm=Bold gui=Bold  " ctermbg=LightCyan guibg=#181818 cterm=None gui=None
+    autocmd ColorScheme * hi MatchParen    cterm=Bold gui=Bold
+    autocmd ColorScheme * hi MatchWord     cterm=Bold gui=Bold
+    autocmd ColorScheme * hi MatchParenCur cterm=Bold gui=Bold
+    autocmd ColorScheme * hi MatchWordCur  cterm=Bold gui=Bold
 augroup END
 
 
@@ -805,6 +805,10 @@ let g:sclow_bar_right_offset=-1
 let g:sclow_hide_full_length=1
 
 let g:sclow_sbar_text="\<Space>"
+augroup sclowHighlight
+    autocmd!
+    autocmd ColorScheme * hi SclowSbar ctermbg=245 guibg=#8a8a8a
+augroup END
 
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -999,7 +1003,7 @@ endfunc
 
 " STLGitStatus returns git status. 
 " For example:
-"   ↯ master* - dasn't pushed to origin, master branch with uncommited files.
+"   ⛓ master* - dasn't pushed to origin, master branch with uncommited files.
 "   master* - master branch with uncommited files (pushed commited files);
 "   master - master branch, pushed to origin;
 "   etc...
@@ -1011,7 +1015,7 @@ let g:gitstat_last_result=''
 augroup GitStatusUpdate
     autocmd BufWritePost,BufEnter * silent :let g:gitstat_file_path=''
     autocmd DirChanged global :let g:gitstat_file_path=''
-augroup end
+augroup END
 function STLGitStatus()
     if expand('%') == g:gitstat_file_path
         return g:gitstat_last_result
@@ -1041,7 +1045,7 @@ function STLGitStatus()
                 \ system('git rev-parse origin/'.s:branch),
                 \ '\n', '', 'g')
 
-    let g:gitstat_last_result=(s:local!=s:origin?'↯ ':'') . s:branch 
+    let g:gitstat_last_result=(s:local!=s:origin?'⛓ ':'') . s:branch
                 \ . (s:modcount!=0?'*':'')
     let g:gitstat_file_path=expand('%')
     return g:gitstat_last_result
