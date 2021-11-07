@@ -300,17 +300,17 @@ function! NERDTreeSync()
     " The path isn't synchronized if the cursor is
     " in the Tagbar or NERDTree buffers.
     let s:file_path=expand('%')
-    let s:is_tagbar_buffer=stridx(s:file_path, '__Tagbar__') == 0
-    let s:is_nerdtree_buffer=stridx(s:file_path, 'NERD_tree_') == 0
-    let s:is_explorer_buffer=stridx(bufname('%'), '[BufExplorer]') == 0
-    let s:is_noname_buffer=strlen(bufname('%')) == 0
+    let s:is_tagbar_buf=stridx(s:file_path, '__Tagbar__') == 0
+    let s:is_nerdtree_buf=stridx(s:file_path, 'NERD_tree_') == 0
+    let s:is_explorer_buf=stridx(bufname('%'), '[BufExplorer]') == 0
+    let s:is_noname_buf=strlen(bufname('%')) == 0
 
     " Synchronize NERDTree.
     if &modifiable && NERDTreeIsOpen() && !&diff
-                \ && !s:is_tagbar_buffer
-                \ && !s:is_nerdtree_buffer 
-                \ && !s:is_explorer_buffer 
-                \ && !s:is_noname_buffer
+                \ && !s:is_tagbar_buf
+                \ && !s:is_nerdtree_buf 
+                \ && !s:is_explorer_buf 
+                \ && !s:is_noname_buf
         try
             NERDTreeTabsFind
             wincmd p
@@ -321,10 +321,10 @@ function! NERDTreeSync()
     " Update titlestring.
     " If a buffer with a file is not selected, we need to find
     " the first buffer with a file and get its name.
-    if s:is_tagbar_buffer 
-                \ || s:is_nerdtree_buffer
-                \ || s:is_explorer_buffer
-                \ || s:is_noname_buffer
+    if s:is_tagbar_buf 
+                \ || s:is_nerdtree_buf
+                \ || s:is_explorer_buf
+                \ || s:is_noname_buf
         let s:file_path=""
         let s:buflist=tabpagebuflist(v:lnum)
         if type(s:buflist) != 3 " not a list
@@ -336,20 +336,20 @@ function! NERDTreeSync()
 
         for i in s:buflist " < need a list
             let s:buf_file_path=fnamemodify(bufname(i), '')
-            let s:is_tagbar_buffer=
+            let s:is_tagbar_buf=
                         \ stridx(s:buf_file_path, '__Tagbar__') == 0
-            let s:is_nerdtree_buffer=
+            let s:is_nerdtree_buf=
                         \ stridx(s:buf_file_path, 'NERD_tree_') == 0
-            let s:is_explorer_buffer=
+            let s:is_explorer_buf=
                         \ stridx(s:buf_file_path, '[BufExplorer]') == 0
-            let s:is_noname_buffer=
+            let s:is_noname_buf=
                         \ strlen(s:buf_file_path) == 0
 
             if bufexists(i)
-                        \ && !s:is_tagbar_buffer 
-                        \ && !s:is_nerdtree_buffer 
-                        \ && !s:is_explorer_buffer
-                        \ && !s:is_noname_buffer
+                        \ && !s:is_tagbar_buf 
+                        \ && !s:is_nerdtree_buf 
+                        \ && !s:is_explorer_buf
+                        \ && !s:is_noname_buf
                 " The file was probably found.
                 let s:file_path=s:buf_file_path
                 break
@@ -652,21 +652,29 @@ function! ToggleTagbar()
     let g:tagbar_autofocus=0
 
     " Don't toggle tagbar if cursor is in tagbar or nerdtree buffers.
-    let s:is_tagbar_buffer=stridx(expand('%'), '__Tagbar__') == 0
-    let s:is_nerdtree_buffer=stridx(expand('%'), 'NERD_tree_') == 0
-    let s:initial_buffer=1
+    let s:initial_buf=1
+    let s:is_tagbar_buf=stridx(expand('%'), '__Tagbar__') == 0
+    let s:is_nerdtree_buf=stridx(expand('%'), 'NERD_tree_') == 0
+    let s:is_explorer_buf=stridx(bufname('%'), '[BufExplorer]') == 0
+    let s:is_tech_buf=strlen(bufname('%')) == 0 && !&modifiable
+    let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''), 
+                \ '|| [Search') == 0
 
-    if s:is_tagbar_buffer || s:is_nerdtree_buffer
-        echomsg 'You can`t open TagBar inside TagBar or NERDTree buffers!'
+    if s:is_tagbar_buf 
+                \ || s:is_nerdtree_buf 
+                \ || s:is_explorer_buf
+                \ || s:is_tech_buf
+                \ || s:is_rgrep_buf
+        echomsg 'You can`t open TagBar inside the technical buffers!'
     else
         TagbarToggle
     endif
 
     " Go back to initial buffer.
-    while !exists('s:initial_buffer')
+    while !exists('s:initial_buf')
         wincmd w
     endwhile
-    unlet s:initial_buffer
+    unlet s:initial_buf
 endfunction
 
 nmap <F10> :call ToggleTagbar()<CR>
@@ -876,14 +884,19 @@ if $TERM != 'xterm-256color'
 
 
     function! OnFocus()
-        let s:is_nerdtree_buffer=bufname('%') =~ 'NERD_Tree_'
-        let s:is_tagbar_buffer=bufname('%') =~ '__Tagbar__'
-        let s:is_explorer_buffer=stridx(bufname('%'), '[BufExplorer]') == 0
-        let s:is_rgrep_buffer=stridx(join(getline(bufname('%'), 1), ''), 
+        let s:is_nerdtree_buf=bufname('%') =~ 'NERD_Tree_'
+        let s:is_tagbar_buf=bufname('%') =~ '__Tagbar__'
+        let s:is_explorer_buf=stridx(bufname('%'), '[BufExplorer]') == 0
+        let s:is_tech_buf=strlen(bufname('%')) == 0 && !&modifiable
+        let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''), 
                     \ '|| [Search') == 0
 
-        if (s:is_nerdtree_buffer || s:is_tagbar_buffer
-                    \ || s:is_rgrep_buffer || s:is_explorer_buffer)
+        "set lazyredraw
+        if (s:is_nerdtree_buf 
+                    \ || s:is_tagbar_buf
+                    \ || s:is_rgrep_buf
+                    \ || s:is_tech_buf
+                    \ || s:is_explorer_buf)
             setlocal cursorline
             hi clear CursorLine
             hi clear Cursor
@@ -897,17 +910,22 @@ if $TERM != 'xterm-256color'
             hi Cursor guibg=#3f3f3f guifg=#ffffff
             call OnLeave() " uncomment it to hide cursorline in main window
         endif
+        "set nolazyredraw
     endfunction
 
     function! OnLeave()
-        let s:is_nerdtree_buffer=bufname('%') =~ 'NERD_Tree_'
-        let s:is_tagbar_buffer=bufname('%') =~ '__Tagbar__'
-        let s:is_explorer_buffer=stridx(bufname('%'), '[BufExplorer]') == 0
-        let s:is_rgrep_buffer=stridx(join(getline(bufname('%'), 1), ''), 
+        let s:is_nerdtree_buf=bufname('%') =~ 'NERD_Tree_'
+        let s:is_tagbar_buf=bufname('%') =~ '__Tagbar__'
+        let s:is_explorer_buf=stridx(bufname('%'), '[BufExplorer]') == 0
+        let s:is_tech_buf=strlen(bufname('%')) == 0 && !&modifiable
+        let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''), 
                     \ '|| [Search') == 0
 
-        if (!(s:is_nerdtree_buffer || s:is_tagbar_buffer 
-                    \ || s:is_rgrep_buffer || s:is_explorer_buffer))
+        if (!(s:is_nerdtree_buf 
+                    \ || s:is_tagbar_buf 
+                    \ || s:is_rgrep_buf
+                    \ || s:is_tech_buf
+                    \ || s:is_explorer_buf))
             setlocal nocursorline
         endif
     endfunction
