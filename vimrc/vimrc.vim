@@ -33,6 +33,31 @@ function! s:Debug(message) abort
   silent execute '!echo '.a:message.' >> ~/.vimdebug.tmp'
 endfunction
 
+" IsTechBuffer returns true for technical buffers.
+" Usage:
+"   if IsTechBuffer(expand('%')) ...
+function! IsTechBuffer(bufname, modifiable) abort
+    let s:is_noname_buf=strlen(a:bufname) == 0
+    let s:is_tagbar_buf=stridx(a:bufname, '__Tagbar__') == 0
+    let s:is_nerdtree_buf=stridx(a:bufname, 'NERD_tree_') == 0
+    let s:is_explorer_buf=stridx(a:bufname, '[BufExplorer]') == 0
+    let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''), 
+                \ '|| [Search') == 0
+
+    let s:result=s:is_tagbar_buf 
+                \ || s:is_nerdtree_buf
+                \ || s:is_explorer_buf
+                \ || s:is_rgrep_buf
+
+    if a:modifiable
+        let s:result=s:result || (s:is_noname_buf && !&modifiable)
+    else
+        let s:result=s:result || s:is_noname_buf
+    endif
+
+    return s:result
+endfunction
+
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' MAIN                                                                    ''"
@@ -300,17 +325,18 @@ function! NERDTreeSync()
     " The path isn't synchronized if the cursor is
     " in the Tagbar or NERDTree buffers.
     let s:file_path=expand('%')
-    let s:is_tagbar_buf=stridx(s:file_path, '__Tagbar__') == 0
-    let s:is_nerdtree_buf=stridx(s:file_path, 'NERD_tree_') == 0
-    let s:is_explorer_buf=stridx(bufname('%'), '[BufExplorer]') == 0
-    let s:is_noname_buf=strlen(bufname('%')) == 0
+    if NERDTreeIsOpen() && ! IsTechBuffer(s:file_path, 0)
+    "" let s:is_tagbar_buf=stridx(s:file_path, '__Tagbar__') == 0
+    "" let s:is_nerdtree_buf=stridx(s:file_path, 'NERD_tree_') == 0
+    "" let s:is_explorer_buf=stridx(bufname('%'), '[BufExplorer]') == 0
+    "" let s:is_noname_buf=strlen(bufname('%')) == 0
 
-    " Synchronize NERDTree.
-    if &modifiable && NERDTreeIsOpen() && !&diff
-                \ && !s:is_tagbar_buf
-                \ && !s:is_nerdtree_buf 
-                \ && !s:is_explorer_buf 
-                \ && !s:is_noname_buf
+    "" " Synchronize NERDTree.
+    "" if &modifiable && NERDTreeIsOpen() && !&diff
+    ""             \ && !s:is_tagbar_buf
+    ""             \ && !s:is_nerdtree_buf 
+    ""             \ && !s:is_explorer_buf 
+    ""             \ && !s:is_noname_buf
         try
             NERDTreeTabsFind
             wincmd p
@@ -321,10 +347,11 @@ function! NERDTreeSync()
     " Update titlestring.
     " If a buffer with a file is not selected, we need to find
     " the first buffer with a file and get its name.
-    if s:is_tagbar_buf 
-                \ || s:is_nerdtree_buf
-                \ || s:is_explorer_buf
-                \ || s:is_noname_buf
+    if IsTechBuffer(s:file_path, 0)
+    "" if s:is_tagbar_buf 
+    ""             \ || s:is_nerdtree_buf
+    ""             \ || s:is_explorer_buf
+    ""             \ || s:is_noname_buf
         let s:file_path=""
         let s:buflist=tabpagebuflist(v:lnum)
         if type(s:buflist) != 3 " not a list
@@ -336,20 +363,21 @@ function! NERDTreeSync()
 
         for i in s:buflist " < need a list
             let s:buf_file_path=fnamemodify(bufname(i), '')
-            let s:is_tagbar_buf=
-                        \ stridx(s:buf_file_path, '__Tagbar__') == 0
-            let s:is_nerdtree_buf=
-                        \ stridx(s:buf_file_path, 'NERD_tree_') == 0
-            let s:is_explorer_buf=
-                        \ stridx(s:buf_file_path, '[BufExplorer]') == 0
-            let s:is_noname_buf=
-                        \ strlen(s:buf_file_path) == 0
+            if bufexists(i) && !IsTechBuffer(s:buf_file_path, 0)
+            "" let s:is_tagbar_buf=
+            ""             \ stridx(s:buf_file_path, '__Tagbar__') == 0
+            "" let s:is_nerdtree_buf=
+            ""             \ stridx(s:buf_file_path, 'NERD_tree_') == 0
+            "" let s:is_explorer_buf=
+            ""             \ stridx(s:buf_file_path, '[BufExplorer]') == 0
+            "" let s:is_noname_buf=
+            ""             \ strlen(s:buf_file_path) == 0
 
-            if bufexists(i)
-                        \ && !s:is_tagbar_buf 
-                        \ && !s:is_nerdtree_buf 
-                        \ && !s:is_explorer_buf
-                        \ && !s:is_noname_buf
+            "" if bufexists(i)
+            ""             \ && !s:is_tagbar_buf 
+            ""             \ && !s:is_nerdtree_buf 
+            ""             \ && !s:is_explorer_buf
+            ""             \ && !s:is_noname_buf
                 " The file was probably found.
                 let s:file_path=s:buf_file_path
                 break
@@ -884,48 +912,54 @@ if $TERM != 'xterm-256color'
 
 
     function! OnFocus()
-        let s:is_nerdtree_buf=bufname('%') =~ 'NERD_Tree_'
-        let s:is_tagbar_buf=bufname('%') =~ '__Tagbar__'
-        let s:is_explorer_buf=stridx(bufname('%'), '[BufExplorer]') == 0
-        let s:is_tech_buf=strlen(bufname('%')) == 0 && !&modifiable
-        let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''), 
-                    \ '|| [Search') == 0
+        if IsTechBuffer(bufname('%'), 1)
+        """ let s:is_nerdtree_buf=bufname('%') =~ 'NERD_Tree_'
+        """ let s:is_tagbar_buf=bufname('%') =~ '__Tagbar__'
+        """ let s:is_explorer_buf=stridx(bufname('%'), '[BufExplorer]') == 0
+        """ let s:is_tech_buf=strlen(bufname('%')) == 0 && !&modifiable
+        """ let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''), 
+        """             \ '|| [Search') == 0
 
-        "set lazyredraw
-        if (s:is_nerdtree_buf 
-                    \ || s:is_tagbar_buf
-                    \ || s:is_rgrep_buf
-                    \ || s:is_tech_buf
-                    \ || s:is_explorer_buf)
+        """ "set lazyredraw
+        """ if (s:is_nerdtree_buf 
+        """             \ || s:is_tagbar_buf
+        """             \ || s:is_rgrep_buf
+        """             \ || s:is_tech_buf
+        """             \ || s:is_explorer_buf)
             setlocal cursorline
             hi clear CursorLine
             hi clear Cursor
+            hi clear Search
             hi CursorLine guibg=#003a45 guifg=#ffffff gui=bold
             hi Cursor guibg=#003a45 guifg=#ffffff gui=bold
+            hi Search NONE
         else
             setlocal cursorline
             hi clear CursorLine
             hi clear Cursor
+            hi clear Search
             hi CursorLine guibg=#00202a guifg=#ffffff
             hi Cursor guibg=#3f3f3f guifg=#ffffff
+            hi Search guifg=NONE guibg=NONE gui=bold,italic
             call OnLeave() " uncomment it to hide cursorline in main window
         endif
         "set nolazyredraw
     endfunction
 
     function! OnLeave()
-        let s:is_nerdtree_buf=bufname('%') =~ 'NERD_Tree_'
-        let s:is_tagbar_buf=bufname('%') =~ '__Tagbar__'
-        let s:is_explorer_buf=stridx(bufname('%'), '[BufExplorer]') == 0
-        let s:is_tech_buf=strlen(bufname('%')) == 0 && !&modifiable
-        let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''), 
-                    \ '|| [Search') == 0
+        if !IsTechBuffer(bufname('%'), 1)
+        "" let s:is_nerdtree_buf=bufname('%') =~ 'NERD_Tree_'
+        "" let s:is_tagbar_buf=bufname('%') =~ '__Tagbar__'
+        "" let s:is_explorer_buf=stridx(bufname('%'), '[BufExplorer]') == 0
+        "" let s:is_tech_buf=strlen(bufname('%')) == 0 && !&modifiable
+        "" let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''), 
+        ""             \ '|| [Search') == 0
 
-        if (!(s:is_nerdtree_buf 
-                    \ || s:is_tagbar_buf 
-                    \ || s:is_rgrep_buf
-                    \ || s:is_tech_buf
-                    \ || s:is_explorer_buf))
+        "" if (!(s:is_nerdtree_buf 
+        ""             \ || s:is_tagbar_buf 
+        ""             \ || s:is_rgrep_buf
+        ""             \ || s:is_tech_buf
+        ""             \ || s:is_explorer_buf))
             setlocal nocursorline
         endif
     endfunction
@@ -975,7 +1009,7 @@ set completeopt-=preview
 set number
 " set number relativenumber
 " set relativenumber
-set numberwidth=2
+set numberwidth=5
 
 " TITLE SETTINGS
 " Custom title style.
