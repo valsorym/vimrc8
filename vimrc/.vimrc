@@ -206,7 +206,7 @@ if $TERM != 'xterm-256color'
         call s:styleClean()
         hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
         hi CursorLineNr cterm=NONE ctermfg=226 ctermbg=38 gui=NONE guifg=#7c8884 guibg=#23343d
-        hi Cursor cterm=NONE ctermfg=NONE ctermbg=NONE gui=NONE guifg=NONE guibg=NONE
+        hi Cursor cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#004663
         hi CursorLine cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#004663
         hi Search cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
     endfunction
