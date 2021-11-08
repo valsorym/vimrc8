@@ -77,7 +77,7 @@ P.s. The other buttons correspond to the parameters by default.
 ### Tabs.
 
 - `C-t` - list of active buffers;
-- `C-n` - open new tab (or - `F7`);
+- `C-n` or `F7` - open new tab;
 - `F5` - tab prev;
 - `F6` - tab next.
 
@@ -100,10 +100,10 @@ P.P.s. Install the `vim-gtk` package, and use `select-editor` to select the `vim
 
 - `C-j` - move current line/selections down;
 - `C-k` - move current line/selections up;
-- `S-f` - set multiple cursor mode / the allocation of the next word under the cursor, and:
+- `C-f` - set multiple cursor mode / the allocation of the next word under the cursor, and:
   - During the search:
-    - `S-b` - the allocation of the previous word under the cursor;
-    - `S-x` - ignore the current word and move on to the next;
+    - `C-b` - the allocation of the previous word under the cursor;
+    - `C-x` - ignore the current word and move on to the next;
   - After selecting all the words, you can start editing:
     - `c` - remove word and go into edit mode;
     - `I` - set the cursor in the begin of the word;

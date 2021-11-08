@@ -1014,9 +1014,9 @@ nmap <A-i> :ColorToggle<CR>
 let g:multi_cursor_use_default_mapping=0
 
 " Key mapping.
-let g:multi_cursor_next_key='<S-f>'
-let g:multi_cursor_prev_key='<S-b>'
-let g:multi_cursor_skip_key='<S-x>'
+let g:multi_cursor_next_key='<C-f>'
+let g:multi_cursor_prev_key='<C-p>'
+let g:multi_cursor_skip_key='<C-s>'
 let g:multi_cursor_quit_key='<Esc>'
 
 " Fix bug with deoplete: https://github.com/Shougo/deoplete.nvim/issues/265
