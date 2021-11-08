@@ -628,8 +628,6 @@ augroup go
     " Use go-def-tab to open new tab with definition.
     """ " To stop for Ctrl+ Mouse Left Click
     """ let g:go_def_mapping_enabled=0
-    """ autocmd FileType go nmap <buffer> <C-LeftMouse> :echom 'Jump to definition: Ctrl+Alt+d'<CR>
-    """ autocmd FileType go nmap <buffer> <C-LeftMouse> :<C-u>call go#def#Jump("tab", 0)<CR>
     autocmd FileType go nmap <buffer> <C-LeftMouse> <Plug>(go-def-tab)
     autocmd FileType go nmap <buffer> <C-A-j> <Plug>(go-def-tab)
 augroup END
@@ -927,9 +925,9 @@ endif
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " CONFIGS
 " UpdateSource updates configurations of vim.
-func! UpdateSource() abort
+function! UpdateSource() abort
     source ~/.vimrc | source ~/.gvimrc
-endfunc
+endfunction
 imap <C-A-r> <Esc>:call UpdateSource()<CR>
 nmap <C-A-r> :call UpdateSource()<CR>
 
@@ -1164,6 +1162,11 @@ nnoremap <silent> <C-LeftMouse> <LeftMouse>:echom 'Undefined...'<CR>
 
 " http://vimdoc.sourceforge.net/htmldoc/options.html#'mouse'
 set mouse=nicr " no more visual mode from using mouse
+if has("mouse_sgr")
+    set ttymouse=sgr
+else
+    set ttymouse=xterm2
+end
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' FILE ASSOCIATION                                                        ''"
