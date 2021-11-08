@@ -175,29 +175,25 @@ nmap <F7> :tabnew<CR>
 imap <C-n> <Esc>:tabnew<CR>
 nmap <C-n> :tabnew<CR>
 
-" VISUAL SELECT ALL
-" USAGE: Ctrl+a
-map <C-a> <Esc>ggVG<CR>
-
 " MOVE TAB TO LEFT
-" USAGE: Ctrl+J
-imap <C-j> <Esc>:call MoveTabLeft()<CR>
-nmap <C-j> :call MoveTabLeft()<CR>
+" USAGE: Ctrl+Shift+j
+imap <C-S-j> <Esc>:call MoveTabLeft()<CR>
+nmap <C-S-j> :call MoveTabLeft()<CR>
 
 " MOVE TAB TO RIGHT
-" USAGE: Ctrl+k
-imap <C-k> <Esc>:call MoveTabRight()<CR>
-nmap <C-k> :call MoveTabRight()<CR>
+" USAGE: Ctrl+Shift+k
+imap <C-S-k> <Esc>:call MoveTabRight()<CR>
+nmap <C-S-k> :call MoveTabRight()<CR>
 
 " MOVE TAB TO FIRST POSITION
 " USAGE: Ctrl+h
-imap <C-h> <Esc>:call MoveTabFirst()<CR>
-nmap <C-h> :call MoveTabFirst()<CR>
+imap <C-S-h> <Esc>:call MoveTabFirst()<CR>
+nmap <C-S-h> :call MoveTabFirst()<CR>
 
 " MOVE TAB TO LAST POSITION
 " USAGE: Ctrl+l
-imap <C-l> <Esc>:call MoveTabLast()<CR>
-nmap <C-l> :call MoveTabLast()<CR>
+imap <C-S-l> <Esc>:call MoveTabLast()<CR>
+nmap <C-S-l> :call MoveTabLast()<CR>
 
 " TAB STYLE
 " 0. Short tabs - only filename.
@@ -870,8 +866,8 @@ if $TERM != 'xterm-256color'
         au!
         "au BufLeave,WinLeave,FocusLost,CmdwinLeave * call OnLeave()
         "au BufEnter,VimEnter,WinEnter,BufWinEnter,FocusGained,CmdwinEnter * call OnFocus()
-        au BufLeave,FocusLost * call OnLeave()
-        au BufEnter,FocusGained * call OnFocus()
+        au BufLeave,FocusLost,WinLeave * call OnLeave()
+        au BufEnter,FocusGained,WinEnter,VimEnter * call OnFocus()
     augroup END
 
     " Clear style for some elements.
@@ -1311,3 +1307,7 @@ set smartcase
 """ Highlight found matches and remove backlight when button `Esc` is pressed.
 set hlsearch
 nnoremap <Esc> :noh<return><Esc>
+
+" VISUAL SELECT ALL
+" USAGE: Ctrl+a
+map <C-a> <Esc>ggVG<CR>
