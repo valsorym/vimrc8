@@ -297,7 +297,6 @@ let g:NERDTreeCustomOpenArgs = {
 " Doc: https://github.com/preservim/nerdtree/blob/master/plugin/NERD_tree.vim#L99
 let g:NERDTreeMapOpenInTab='<CR>' " def `t` - open file in new tab by ENTER.
 let g:NERDTreeMapOpenExpl='' " def `e`
-nmap t :echom "Hello"
 
 " On startup, always focus file window after startup.
 """ let g:nerdtree_tabs_smart_startup_focus=2
