@@ -123,6 +123,521 @@ filetype plugin indent on
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "''                                                                         ''"
+"''                             BASE SETTINGS                               ''"
+"''                                                                         ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'' MAIN                                                                    ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" BACKUP AND SWAP FILES
+set backup
+set undodir=/tmp//
+set backupdir=/tmp//
+set directory=/tmp//
+
+" INCOMPATIBILITY WITH VI
+" Use the full capabilities of vim without compatibility with vi.
+set nocompatible      " Turn arrows in the mode of INSERT.
+
+nnoremap <silent> <ESC>OA <UP>
+nnoremap <silent> <ESC>OB <DOWN>
+nnoremap <silent> <ESC>OC <RIGHT>
+nnoremap <silent> <ESC>OD <LEFT>
+inoremap <silent> <ESC>OA <UP>
+inoremap <silent> <ESC>OB <DOWN>
+inoremap <silent> <ESC>OC <RIGHT>
+inoremap <silent> <ESC>OD <LEFT>
+
+" BIPING
+" Disable beeping (aka 'bell') and window flashing, it's work
+" in the terminal and GUI mode.
+set noerrorbells visualbell t_vb=
+if has('autocmd')
+  autocmd GUIEnter * set visualbell t_vb=
+endif
+
+" ENCODING SETTINGS
+" UTF8 and type ending of line.
+set termencoding=utf-8
+set fileencodings=usc-bom,utf-8mdefault,cp1251
+set ffs=unix,dos,mac
+if has('multi_byte')
+    set encoding=utf-8
+    set fileencodings=utf-8,ucs-bom,latin1
+    setglobal fileencoding=utf-8
+    if &termencoding == ''
+        let &termencoding=&encoding
+    endif
+endif
+
+" COLOR SCHEME
+" Editor color scheme.
+syntax on
+set background=dark
+colorscheme code
+
+" Change cursorline for gVIM.
+if $TERM != 'xterm-256color'
+    " Different cursor styles in different buffers.
+    " NERD_tree and Tagbar have a brighter cursor color when buffer is active,
+    " and dim cursor color when focus is lost.
+    " Main editor buffor has dim cursor color by default and hides the cursor
+    " when buffer lost focus.
+    setlocal nocursorline
+    augroup CursorLine
+        au!
+        au BufLeave,FocusLost,WinLeave,CmdwinLeave * call OnLeave()
+        au BufEnter,FocusGained,WinEnter,VimEnter,BufWinEnter,CmdwinEnter * call OnFocus()
+    augroup END
+
+    " Clear style for some elements.
+    function s:styleClean()
+        hi clear Cursor
+        hi clear CursorLine
+        hi clear CursorLineNr
+        hi clear LineNr
+        hi clear Search
+    endfunction
+
+    " Reset styles for some elements in active buffer.
+    function! s:styleActiveBuffer()
+        call s:styleClean()
+        hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
+        hi CursorLineNr cterm=NONE ctermfg=226 ctermbg=38 gui=NONE guifg=#7c8884 guibg=#23343d
+        hi Cursor cterm=NONE ctermfg=NONE ctermbg=NONE gui=NONE guifg=NONE guibg=NONE
+        hi CursorLine cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#004663
+        hi Search cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
+    endfunction
+
+    " Reset styles for some elements in not active buffer.
+    function! s:styleNoActiveBuffer()
+        call s:styleClean()
+        hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
+        hi CursorLineNr cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#003a45
+        hi Cursor cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#3f3f3f
+        hi CursorLine cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#00202a
+        hi Search cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
+    endfunction
+
+    " On-focuse event.
+    function! OnFocus()
+        set lazyredraw
+        if IsTechBuffer(bufname('%'), 1)
+            setlocal cursorline
+            call s:styleActiveBuffer()
+        else
+            setlocal nocursorline
+            call s:styleNoActiveBuffer()
+        endif
+        set nolazyredraw
+    endfunction
+
+    " On-leave event.
+    function! OnLeave()
+        set lazyredraw
+        if IsTechBuffer(bufname('%'), 1)
+            setlocal cursorline
+            call s:styleActiveBuffer()
+        else
+            setlocal nocursorline
+            call s:styleNoActiveBuffer()
+        endif
+        set nolazyredraw
+    endfunction
+endif
+""" colorscheme absent-contrast " rainglow/vim
+
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'' EDITOR                                                                  ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" CONFIGS
+" UpdateSource updates configurations of vim.
+function! UpdateSource() abort
+    source ~/.vimrc | source ~/.gvimrc
+endfunction
+imap <C-A-r> <Esc>:call UpdateSource()<CR>
+nmap <C-A-r> :call UpdateSource()<CR>
+
+" TAB KEY SETTING
+" Setting indentation when press the Tab key.
+"     smarttab    when on, a <Tab> in front of a line inserts blanks
+"                 according to 'shiftwidth'.  'tabstop' or 'softtabstop' is
+"                 used in other places. A <BS> will delete a 'shiftwidth'
+"                 worth of space at the start of the line;
+"     expandtab   In Insert mode, use the appropriate number of spaces to
+"                 insert a <Tab>. Spaces are used in indents with the '>' and
+"                 '<' commands and when 'autoindent' is on. To insert a real
+"                 tab when 'expandtab' is on, use CTRL-V<Tab>;
+"     tabstop     magnitude of the indentation for Tab style;
+"     softtabstop magnitude of the indentation for Space style;
+"     shiftwidth  the number of spaces used in the indentation
+"                 commands, such as >> or <<.
+set smarttab
+set expandtab
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+
+" COMMAND LINE
+" Base settings.
+set cmdheight=2
+set completeopt+=menuone
+set completeopt-=preview
+
+" LINE NUMBERING
+" Show line numbers in the file.
+set number
+" set number relativenumber
+" set relativenumber
+set numberwidth=5
+
+" TITLE SETTINGS
+" Custom title style.
+set title
+" let g:titlestring='set titlestring=VIM:\ %-25.55F titlelen=70'
+let g:titlestring='set titlestring=VIM titlelen=70'
+exec g:titlestring
+
+" STATUSBAR SETTINGS
+" Show pressed keys in normal mode.
+set showcmd
+
+" To display the status line always.
+set laststatus=2
+
+" Display typed commands in the statsubar and make autocompletion using
+" the <Tab> key. Always show the status of open file in the status bar.
+set wildmenu
+
+" STATUSLINE
+" STLWordCount returns string as <current word number>/<max words in file>.
+function STLWordCount()
+    let s:word_count=wordcount().words
+    if has_key(wordcount(),'visual_words')
+        let s:word_count=wordcount().visual_words."/".wordcount().words " count selected words
+    else
+        let s:word_count=wordcount().cursor_words."/".wordcount().words " or shows words 'so far'
+    endif
+    return s:word_count
+endfunction
+
+" STLReadOnly returns string 'r' for readonly file and 'rw' for any.
+function STLReadOnly()
+    return &readonly ? "r":"rw" 
+endfunc
+
+" STLGitStatus returns git status. 
+" For example:
+"   ⛓ master* - dasn't pushed to origin, master branch with uncommited files.
+"   master* - master branch with uncommited files (pushed commited files);
+"   master - master branch, pushed to origin;
+"   etc...
+" Note: Using STLGitStatus directly in the statusline
+"       will delays the text input. For this reason,
+"       we use global variables to cache the result.
+let g:gitstat_file_path=expand('%')
+let g:gitstat_last_result=''
+augroup GitStatusUpdate
+    autocmd BufWritePost,BufEnter * silent :let g:gitstat_file_path=''
+    autocmd DirChanged global :let g:gitstat_file_path=''
+augroup END
+function STLGitStatus()
+    if expand('%') == g:gitstat_file_path
+        return g:gitstat_last_result
+    endif
+
+    " Get git status.
+    let s:status=substitute(system('git status -s'), '\n', '  |  ', 'g')
+    if s:status=~'not a git repository' 
+                \ || s:status=~'fatal:' 
+                \ || s:status=~'command not found'
+        let g:gitstat_last_result=''
+        let g:gitstat_file_path=expand('%')
+        return g:gitstat_last_result
+    endif
+
+    " Get current branch.
+    let s:branch=substitute(
+                \ system('git rev-parse --abbrev-ref HEAD'),
+                \ '\n', '', 'g')
+
+    " Check the number of modified files.
+    let s:modcount=count(s:status, '  |  ')
+
+    " Check sync with origin.
+    let s:local=substitute(system('git rev-parse '.s:branch), '\n', '', 'g')
+    let s:origin=substitute(
+                \ system('git rev-parse origin/'.s:branch),
+                \ '\n', '', 'g')
+
+    let g:gitstat_last_result=(s:local!=s:origin?'⛓ ':'') . s:branch
+                \ . (s:modcount!=0?'*':'')
+    let g:gitstat_file_path=expand('%')
+    return g:gitstat_last_result
+endfunction
+
+set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=
+""" set statusline+=%{(STLWordCount()!='0/0')?'\ Word:\ '.STLWordCount().'\ \｜':''}
+set statusline+=\ Col:\ %c\ \｜
+set statusline+=\ Row:\ %l\/%L\ \(%p%%\)\ \｜
+set statusline+=%{(strlen(&filetype)>0)?'\ '.(&filetype).'\ \｜':''}
+set statusline+=%{(strlen(&filetype)>0)?'\ '.(&encoding).'\ \｜':''}
+""" set statusline+=%{(strlen(&filetype)>0)?'\ '.STLReadOnly().'\ \｜':''}
+set statusline+=%{(STLGitStatus()!='')?'\ '.STLGitStatus().'\ \｜':''}
+set statusline+=\ %{mode()=='n'?'◎':'✎'}\ \ 
+
+" Colorize statusline.
+" 1. Add color scheme into vim-theme:
+"   hi STLNormalColor guifg=Black guibg=Green ctermbg=46 ctermfg=0
+"   hi STLInsertColor guifg=Black guibg=Cyan ctermbg=51 ctermfg=0
+"   hi STLReplaceColor guifg=Black guibg=maroon1 ctermbg=165 ctermfg=0
+"   hi STLVisualColor guifg=Black guibg=Orange ctermbg=202 ctermfg=0
+"
+" 2. Use color-scheme:
+"   set statusline+=%#STLNormalColor#%{(mode()=='n')?'\ \ \ ◎\ \ \ ':''}
+"   set statusline+=%#STLInsertColor#%{(mode()=='i')?'\ \ \ ✎\ \ \ ':''}
+"   set statusline+=%#STLReplaceColor#%{(mode()=='R')?'\ \ \ ✎\ \ \ ':''}
+"   set statusline+=%#STLVisualColor#%{(mode()=='v')?'\ \ \ ✎\ \ \ ':''}
+
+" BACKSPACE
+" Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert mode:
+"     indent  allow backspacing over autoindent;
+"     eol     allow backspacing over line breaks (join lines);
+"     start   allow backspacing over the start of insert; CTRL-W and CTRL-U
+"             stop once at the start of insert.
+set backspace=indent,eol,start
+
+" WORKSPACE SIZE
+" Maximum width of text that is being inserted and horizontal line (marker)
+" for the 'tw' position. And set the wrap method of words that go beyond
+" these boundaries in width.
+set colorcolumn=80
+set nowrap
+" set textwidth=79
+" set wrap
+" set linebreak
+" set dy=lastline
+" set sidescroll=5
+" set sidescrolloff=5
+" set listchars+=precedes:<,extends:>
+
+" INDENT SETTINGS
+" Automatic indentation of newline:
+"     autoindent  copy indent from current line when starting a new line
+"                 (typing <CR> in Insert mode or when using the 'o' or 'O'
+"                 command);
+"     cindent     enables automatic C program indenting;
+"     indentexpr  expression which is evaluated to obtain the proper
+"                 indent for a line.
+set autoindent
+set indentexpr=''
+
+" SPECIAL CHAR SETTINGS
+" Display wildcards: tabs and spaces at the end.
+" Examples: ⦙·, ·, ↪\, →\, ↲, ␣, •, ⟩, ⟨
+set list listchars=tab:»·,trail:·
+
+" FILE SETTINGS
+"  Automatic refresh of the buffer if an open file is changed.
+set autoread
+
+" SYSTEM
+"  The length of time Vim waits after you stop typing before it
+"  triggers the plugin is governed by the setting updatetime.
+"  Defaults == 5000.
+"  Note: The lower the updatetime - the more glitches!
+"        For Vim 7 the value must not be less than 1000 (one thousand)!
+if has('gui_running')
+    set updatetime=128
+endif
+
+" SCROLL
+" Use Ctrl+Up and Ctrl+Down scroll a 30% of the screen up or down.
+function! ScrollQuarter(move)
+    let s:height=winheight(0)
+    "if a:move == 'up'
+    "    let key='\<C-Y>'
+    "else
+    "    let key='\<C-E>'
+    "endif
+    "execute 'normal! ' . float2nr(round(s:height*0.3)) . key
+    if a:move == 'up'
+        let prep='L'
+        let key='gk'
+        let post='zb'
+    elseif a:move == 'down'
+        let prep='H'
+        let key='gj'
+        let post='zt'
+    endif
+    execute 'normal! ' . prep . float2nr(round(s:height*0.55)) . key . post
+endfunction
+
+imap <C-Up> <Esc>:call ScrollQuarter('up')<CR>
+nmap <C-Up> :call ScrollQuarter('up')<CR>
+imap <C-Down> <Esc>:call ScrollQuarter('down')<CR>
+nmap <C-Down> :call ScrollQuarter('down')<CR>
+
+"" nnoremap <silent> <up> :call ScrollQuarter('up')<CR>
+"" nnoremap <silent> <down> :call ScrollQuarter('down')<CR>
+
+" MOUSE
+" Left Mouse Click.
+" To change for a specific file, for example GoLang filetype:
+"     autocmd FileType go nmap <buffer> <C-LeftMouse> :<C-u>call go#def#Jump("tab", 0)<CR>
+nnoremap <silent> <C-LeftMouse> <LeftMouse>:echom 'Undefined...'<CR>
+
+" http://vimdoc.sourceforge.net/htmldoc/options.html#'mouse'
+set mouse=nicr " no more visual mode from using mouse
+if has("mouse_sgr")
+    set ttymouse=sgr
+else
+    set ttymouse=xterm2
+end
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'' FILE ASSOCIATION                                                        ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" Correct syntax highlighting for certain file types.
+autocmd BufNewFile,BufRead *.less set filetype=less
+autocmd BufNewFile,BufRead *.html set filetype=htmldjango
+autocmd BufNewFile,BufRead *.md set filetype=markdown
+autocmd BufNewFile,BufRead *.tornado set filetype=html.tornadotmpl
+autocmd BufNewFile,BufRead *.py set filetype=python
+autocmd BufNewFile,BufRead *.pyx set filetype=cython
+autocmd BufNewFile,BufRead *.css set filetype=css
+autocmd BufNewFile,BufRead *.scss set filetype=scss
+autocmd BufNewFile,BufRead *.po set filetype=po
+autocmd BufNewFile,BufRead *.go set filetype=go
+autocmd BufNewFile,BufRead *.gohtml set filetype=gotplhtml
+autocmd BufNewFile,BufRead *.jinja set filetype=jinja
+autocmd BufNewFile,BufRead *.json set filetype=json
+autocmd BufNewFile,BufRead *.template set filetype=txt
+autocmd BufNewFile,BufRead *.gql set filetype=graphql
+autocmd BufNewFile,BufRead *.graphql set filetype=graphql
+autocmd BufNewFile,BufRead *.proto set filetype=proto
+autocmd BufNewFile,BufRead *.cfg set filetype=haproxy
+autocmd BufNewFile,BufRead *.sql set filetype=sql
+autocmd BufNewFile,BufRead *.yaml set filetype=yaml
+autocmd BufRead,BufNewFile */nginx/*.conf if &ft == '' | setfiletype nginx | endif
+
+" ... for typescript and html/css files is recommended to set 2 spaces.
+" - tabstop answers the question: how many columns of whitespace
+"   is a \t char worth? Think of a set of vertical lines running down
+"   the length of your paper.
+" - shiftwidth answers the question: how many columns of whitespace
+"   a “level of indentation” is worth?
+" - softtabstop answers the question: how many columns of whitespace is
+"   a tab keypress or a backspace keypress worth?
+" - expandtab means that you never wanna see a \t again in your
+"   file — rather, tabs keypresses will be expanded into spaces.
+autocmd FileType json setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
+autocmd FileType html setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
+autocmd FileType markdown setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
+autocmd FileType gotplhtml setlocal shiftwidth=4 tabstop=4
+autocmd FileType html.tornadotmpl setlocal shiftwidth=4 tabstop=4
+autocmd FileType htmldjango setlocal shiftwidth=4 tabstop=4
+autocmd FileType jinja setlocal shiftwidth=4 tabstop=4
+autocmd FileType scss setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
+autocmd FileType css setlocal shiftwidth=4 tabstop=4
+autocmd FileType typescript setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
+autocmd FileType javascript setlocal shiftwidth=4 tabstop=4
+autocmd FileType python setlocal expandtab shiftwidth=4 softtabstop=4
+autocmd FileType sh setlocal shiftwidth=4 tabstop=4
+autocmd FileType make setlocal noexpandtab
+autocmd FileType go setlocal noexpandtab
+autocmd FileType vue setlocal shiftwidth=4 tabstop=4
+autocmd FileType graphql setlocal expandtab shiftwidth=4 softtabstop=4
+autocmd FileType proto setlocal expandtab shiftwidth=4 softtabstop=4
+autocmd FileType haproxy setlocal expandtab shiftwidth=4 softtabstop=4
+autocmd FileType nginx setlocal expandtab shiftwidth=4 softtabstop=4
+autocmd FileType sql setlocal shiftwidth=4 tabstop=4
+autocmd FileType yaml setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
+
+
+" TypeScript: see TYPESCRIPT PLUGIN section
+" autocmd BufNewFile,BufRead *.ts set filetype=typescript
+
+" GoLang: see VIM-GO PLUGIN section
+" autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
+
+" When updated the buffer need update syntax highlighting too.
+" This is important when searching in large files.
+function SyncFromStart() abort
+    set lazyredraw " https://vimhelp.org/options.txt.html#%27lazyredraw%27
+    silent execute 'syntax sync fromstart'
+    " execute 'redraw'
+    set nolazyredraw
+endfunction
+autocmd BufEnter,BufWritePost * :call SyncFromStart()
+
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'' GLOBAL KEY MAPPING                                                      ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" UNDO/REDO
+" USAGE: Ctrl+Alt+u and Ctrl+Alt+r
+nmap <C-u> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
+nmap <C-r> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
+
+nmap u :undo<CR>
+imap <C-z> <Esc>:undo<CR>
+nmap <C-z> :undo<CR>
+nnoremap <C-z> <Esc>:undo<CR>
+imap <C-r> <Esc>:redo<CR>
+nmap <C-r> :redo<CR>
+nnoremap <C-r> <Esc>:redo<CR>
+
+
+" COPY/PASTE
+" USAGE: Ctrl+Insert and Shift+Insert or Ctrl+c and Ctrl+v
+vmap <C-Insert> "+y
+vmap <S-Insert> "+p
+vmap <C-c> "+y
+imap <C-c> <ESC> "+y
+vmap <C-v> "+p
+imap <C-v> <ESC> "+p
+
+" SAVE CURRENT FILE
+" USAGE: F2
+imap <F2> <Esc>:w!<CR>
+nmap <F2> :w!<CR>
+
+" OPEN ENCODING MENU
+" USAGE: F8
+set wildmenu
+set wcm=<Tab>
+menu Encoding.utf-8 :e ++enc=utf8 <CR>
+menu Encoding.koi8-r :e ++enc=koi8-r ++ff=unix<CR>
+menu Encoding.windows-1251 :e ++enc=cp1251 ++ff=dos<CR>
+menu Encoding.cp866 :e ++enc=cp866 ++ff=dos<CR>
+menu Encoding.koi8-u :e ++enc=koi8-u ++ff=unix<CR>
+map <F8> :emenu Encoding.<TAB>
+
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'' EDIT MODE                                                               ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" SEARCH
+" Ignore upper/lower cases.
+set ignorecase
+set smartcase
+
+""" Highlight found matches and remove backlight when button `Esc` is pressed.
+set hlsearch
+nnoremap <Esc> :noh<return><Esc>
+
+" VISUAL SELECT ALL
+" USAGE: Ctrl+a
+map <C-a> <Esc>ggVG<CR>
+
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"''                                                                         ''"
 "''                           PLUGIN SETTINGS                               ''"
 "''                                                                         ''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -794,520 +1309,3 @@ augroup sclowHighlight
     autocmd!
     autocmd ColorScheme * hi SclowSbar ctermbg=245 guibg=#8a8a8a
 augroup END
-
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"''                                                                         ''"
-"''                             BASE SETTINGS                               ''"
-"''                                                                         ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' MAIN                                                                    ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" BACKUP AND SWAP FILES
-set backup
-set undodir=/tmp//
-set backupdir=/tmp//
-set directory=/tmp//
-
-" INCOMPATIBILITY WITH VI
-" Use the full capabilities of vim without compatibility with vi.
-set nocompatible      " Turn arrows in the mode of INSERT.
-
-nnoremap <silent> <ESC>OA <UP>
-nnoremap <silent> <ESC>OB <DOWN>
-nnoremap <silent> <ESC>OC <RIGHT>
-nnoremap <silent> <ESC>OD <LEFT>
-inoremap <silent> <ESC>OA <UP>
-inoremap <silent> <ESC>OB <DOWN>
-inoremap <silent> <ESC>OC <RIGHT>
-inoremap <silent> <ESC>OD <LEFT>
-
-" BIPING
-" Disable beeping (aka 'bell') and window flashing, it's work
-" in the terminal and GUI mode.
-set noerrorbells visualbell t_vb=
-if has('autocmd')
-  autocmd GUIEnter * set visualbell t_vb=
-endif
-
-" ENCODING SETTINGS
-" UTF8 and type ending of line.
-set termencoding=utf-8
-set fileencodings=usc-bom,utf-8mdefault,cp1251
-set ffs=unix,dos,mac
-if has('multi_byte')
-    set encoding=utf-8
-    set fileencodings=utf-8,ucs-bom,latin1
-    setglobal fileencoding=utf-8
-    if &termencoding == ''
-        let &termencoding=&encoding
-    endif
-endif
-
-" COLOR SCHEME
-" Editor color scheme.
-syntax on
-set background=dark
-colorscheme code
-
-" Change cursorline for gVIM.
-if $TERM != 'xterm-256color'
-    " Different cursor styles in different buffers.
-    " NERD_tree and Tagbar have a brighter cursor color when buffer is active,
-    " and dim cursor color when focus is lost.
-    " Main editor buffor has dim cursor color by default and hides the cursor
-    " when buffer lost focus.
-    setlocal nocursorline
-    augroup CursorLine
-        au!
-        "au BufLeave,WinLeave,FocusLost,CmdwinLeave * call OnLeave()
-        "au BufEnter,VimEnter,WinEnter,BufWinEnter,FocusGained,CmdwinEnter * call OnFocus()
-        au BufLeave,FocusLost,WinLeave * call OnLeave()
-        au BufEnter,FocusGained,WinEnter,VimEnter * call OnFocus()
-    augroup END
-
-    " Clear style for some elements.
-    function s:styleClean()
-        hi clear Cursor
-        hi clear CursorLine
-        hi clear CursorLineNr
-        hi clear LineNr
-        hi clear Search
-    endfunction
-
-    " Reset styles for some elements in active buffer.
-    function! s:styleActiveBuffer()
-        call s:styleClean()
-        hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
-        hi CursorLineNr cterm=NONE ctermfg=226 ctermbg=38 gui=NONE guifg=#7c8884 guibg=#23343d
-        hi Cursor cterm=NONE ctermfg=NONE ctermbg=NONE gui=NONE guifg=NONE guibg=NONE
-        hi CursorLine cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#004663
-        hi Search cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
-    endfunction
-
-    " Reset styles for some elements in not active buffer.
-    function! s:styleNoActiveBuffer()
-        call s:styleClean()
-        hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
-        hi CursorLineNr cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#003a45
-        hi Cursor cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#3f3f3f
-        hi CursorLine cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#00202a
-        hi Search cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
-    endfunction
-
-    " On-focuse event.
-    function! OnFocus()
-        set lazyredraw
-        if IsTechBuffer(bufname('%'), 1)
-            setlocal cursorline
-            call s:styleActiveBuffer()
-        else
-            setlocal nocursorline
-            call s:styleNoActiveBuffer()
-        endif
-        set nolazyredraw
-    endfunction
-
-    " On-leave event.
-    function! OnLeave()
-        set lazyredraw
-        if IsTechBuffer(bufname('%'), 1)
-            setlocal cursorline
-            call s:styleActiveBuffer()
-        else
-            setlocal nocursorline
-            call s:styleNoActiveBuffer()
-        endif
-        set nolazyredraw
-    endfunction
-endif
-""" colorscheme absent-contrast " rainglow/vim
-
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' EDITOR                                                                  ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" CONFIGS
-" UpdateSource updates configurations of vim.
-function! UpdateSource() abort
-    source ~/.vimrc | source ~/.gvimrc
-endfunction
-imap <C-A-r> <Esc>:call UpdateSource()<CR>
-nmap <C-A-r> :call UpdateSource()<CR>
-
-" TAB KEY SETTING
-" Setting indentation when press the Tab key.
-"     smarttab    when on, a <Tab> in front of a line inserts blanks
-"                 according to 'shiftwidth'.  'tabstop' or 'softtabstop' is
-"                 used in other places. A <BS> will delete a 'shiftwidth'
-"                 worth of space at the start of the line;
-"     expandtab   In Insert mode, use the appropriate number of spaces to
-"                 insert a <Tab>. Spaces are used in indents with the '>' and
-"                 '<' commands and when 'autoindent' is on. To insert a real
-"                 tab when 'expandtab' is on, use CTRL-V<Tab>;
-"     tabstop     magnitude of the indentation for Tab style;
-"     softtabstop magnitude of the indentation for Space style;
-"     shiftwidth  the number of spaces used in the indentation
-"                 commands, such as >> or <<.
-set smarttab
-set expandtab
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
-
-" COMMAND LINE
-" Base settings.
-set cmdheight=2
-set completeopt+=menuone
-set completeopt-=preview
-
-" LINE NUMBERING
-" Show line numbers in the file.
-set number
-" set number relativenumber
-" set relativenumber
-set numberwidth=5
-
-" TITLE SETTINGS
-" Custom title style.
-set title
-" let g:titlestring='set titlestring=VIM:\ %-25.55F titlelen=70'
-let g:titlestring='set titlestring=VIM titlelen=70'
-exec g:titlestring
-
-" STATUSBAR SETTINGS
-" Show pressed keys in normal mode.
-set showcmd
-
-" To display the status line always.
-set laststatus=2
-
-" Display typed commands in the statsubar and make autocompletion using
-" the <Tab> key. Always show the status of open file in the status bar.
-set wildmenu
-
-" STATUSLINE
-" STLWordCount returns string as <current word number>/<max words in file>.
-function STLWordCount()
-    let s:word_count=wordcount().words
-    if has_key(wordcount(),'visual_words')
-        let s:word_count=wordcount().visual_words."/".wordcount().words " count selected words
-    else
-        let s:word_count=wordcount().cursor_words."/".wordcount().words " or shows words 'so far'
-    endif
-    return s:word_count
-endfunction
-
-" STLReadOnly returns string 'r' for readonly file and 'rw' for any.
-function STLReadOnly()
-    return &readonly ? "r":"rw" 
-endfunc
-
-" STLGitStatus returns git status. 
-" For example:
-"   ⛓ master* - dasn't pushed to origin, master branch with uncommited files.
-"   master* - master branch with uncommited files (pushed commited files);
-"   master - master branch, pushed to origin;
-"   etc...
-" Note: Using STLGitStatus directly in the statusline
-"       will delays the text input. For this reason,
-"       we use global variables to cache the result.
-let g:gitstat_file_path=expand('%')
-let g:gitstat_last_result=''
-augroup GitStatusUpdate
-    autocmd BufWritePost,BufEnter * silent :let g:gitstat_file_path=''
-    autocmd DirChanged global :let g:gitstat_file_path=''
-augroup END
-function STLGitStatus()
-    if expand('%') == g:gitstat_file_path
-        return g:gitstat_last_result
-    endif
-
-    " Get git status.
-    let s:status=substitute(system('git status -s'), '\n', '  |  ', 'g')
-    if s:status=~'not a git repository' 
-                \ || s:status=~'fatal:' 
-                \ || s:status=~'command not found'
-        let g:gitstat_last_result=''
-        let g:gitstat_file_path=expand('%')
-        return g:gitstat_last_result
-    endif
-
-    " Get current branch.
-    let s:branch=substitute(
-                \ system('git rev-parse --abbrev-ref HEAD'),
-                \ '\n', '', 'g')
-
-    " Check the number of modified files.
-    let s:modcount=count(s:status, '  |  ')
-
-    " Check sync with origin.
-    let s:local=substitute(system('git rev-parse '.s:branch), '\n', '', 'g')
-    let s:origin=substitute(
-                \ system('git rev-parse origin/'.s:branch),
-                \ '\n', '', 'g')
-
-    let g:gitstat_last_result=(s:local!=s:origin?'⛓ ':'') . s:branch
-                \ . (s:modcount!=0?'*':'')
-    let g:gitstat_file_path=expand('%')
-    return g:gitstat_last_result
-endfunction
-
-set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=
-""" set statusline+=%{(STLWordCount()!='0/0')?'\ Word:\ '.STLWordCount().'\ \｜':''}
-set statusline+=\ Col:\ %c\ \｜
-set statusline+=\ Row:\ %l\/%L\ \(%p%%\)\ \｜
-set statusline+=%{(strlen(&filetype)>0)?'\ '.(&filetype).'\ \｜':''}
-set statusline+=%{(strlen(&filetype)>0)?'\ '.(&encoding).'\ \｜':''}
-""" set statusline+=%{(strlen(&filetype)>0)?'\ '.STLReadOnly().'\ \｜':''}
-set statusline+=%{(STLGitStatus()!='')?'\ '.STLGitStatus().'\ \｜':''}
-set statusline+=\ %{mode()=='n'?'◎':'✎'}\ \ 
-
-" Colorize statusline.
-" 1. Add color scheme into vim-theme:
-"   hi STLNormalColor guifg=Black guibg=Green ctermbg=46 ctermfg=0
-"   hi STLInsertColor guifg=Black guibg=Cyan ctermbg=51 ctermfg=0
-"   hi STLReplaceColor guifg=Black guibg=maroon1 ctermbg=165 ctermfg=0
-"   hi STLVisualColor guifg=Black guibg=Orange ctermbg=202 ctermfg=0
-"
-" 2. Use color-scheme:
-"   set statusline+=%#STLNormalColor#%{(mode()=='n')?'\ \ \ ◎\ \ \ ':''}
-"   set statusline+=%#STLInsertColor#%{(mode()=='i')?'\ \ \ ✎\ \ \ ':''}
-"   set statusline+=%#STLReplaceColor#%{(mode()=='R')?'\ \ \ ✎\ \ \ ':''}
-"   set statusline+=%#STLVisualColor#%{(mode()=='v')?'\ \ \ ✎\ \ \ ':''}
-
-" BACKSPACE
-" Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert mode:
-"     indent  allow backspacing over autoindent;
-"     eol     allow backspacing over line breaks (join lines);
-"     start   allow backspacing over the start of insert; CTRL-W and CTRL-U
-"             stop once at the start of insert.
-set backspace=indent,eol,start
-
-" WORKSPACE SIZE
-" Maximum width of text that is being inserted and horizontal line (marker)
-" for the 'tw' position. And set the wrap method of words that go beyond
-" these boundaries in width.
-set colorcolumn=80
-set nowrap
-" set textwidth=79
-" set wrap
-" set linebreak
-" set dy=lastline
-" set sidescroll=5
-" set sidescrolloff=5
-" set listchars+=precedes:<,extends:>
-
-" INDENT SETTINGS
-" Automatic indentation of newline:
-"     autoindent  copy indent from current line when starting a new line
-"                 (typing <CR> in Insert mode or when using the 'o' or 'O'
-"                 command);
-"     cindent     enables automatic C program indenting;
-"     indentexpr  expression which is evaluated to obtain the proper
-"                 indent for a line.
-set autoindent
-set indentexpr=''
-
-" SPECIAL CHAR SETTINGS
-" Display wildcards: tabs and spaces at the end.
-" Examples: ⦙·, ·, ↪\, →\, ↲, ␣, •, ⟩, ⟨
-set list listchars=tab:»·,trail:·
-
-" FILE SETTINGS
-"  Automatic refresh of the buffer if an open file is changed.
-set autoread
-
-" SYSTEM
-"  The length of time Vim waits after you stop typing before it
-"  triggers the plugin is governed by the setting updatetime.
-"  Defaults == 5000.
-"  Note: The lower the updatetime - the more glitches!
-"        For Vim 7 the value must not be less than 1000 (one thousand)!
-if has('gui_running')
-    set updatetime=128
-endif
-
-" SCROLL
-" Use Ctrl+Up and Ctrl+Down scroll a 30% of the screen up or down.
-function! ScrollQuarter(move)
-    let s:height=winheight(0)
-    "if a:move == 'up'
-    "    let key='\<C-Y>'
-    "else
-    "    let key='\<C-E>'
-    "endif
-    "execute 'normal! ' . float2nr(round(s:height*0.3)) . key
-    if a:move == 'up'
-        let prep='L'
-        let key='gk'
-        let post='zb'
-    elseif a:move == 'down'
-        let prep='H'
-        let key='gj'
-        let post='zt'
-    endif
-    execute 'normal! ' . prep . float2nr(round(s:height*0.55)) . key . post
-endfunction
-
-imap <C-Up> <Esc>:call ScrollQuarter('up')<CR>
-nmap <C-Up> :call ScrollQuarter('up')<CR>
-imap <C-Down> <Esc>:call ScrollQuarter('down')<CR>
-nmap <C-Down> :call ScrollQuarter('down')<CR>
-
-"" nnoremap <silent> <up> :call ScrollQuarter('up')<CR>
-"" nnoremap <silent> <down> :call ScrollQuarter('down')<CR>
-
-" MOUSE
-" Left Mouse Click.
-" To change for a specific file, for example GoLang filetype:
-"     autocmd FileType go nmap <buffer> <C-LeftMouse> :<C-u>call go#def#Jump("tab", 0)<CR>
-nnoremap <silent> <C-LeftMouse> <LeftMouse>:echom 'Undefined...'<CR>
-
-" http://vimdoc.sourceforge.net/htmldoc/options.html#'mouse'
-set mouse=nicr " no more visual mode from using mouse
-if has("mouse_sgr")
-    set ttymouse=sgr
-else
-    set ttymouse=xterm2
-end
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' FILE ASSOCIATION                                                        ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" Correct syntax highlighting for certain file types.
-autocmd BufNewFile,BufRead *.less set filetype=less
-autocmd BufNewFile,BufRead *.html set filetype=htmldjango
-autocmd BufNewFile,BufRead *.md set filetype=markdown
-autocmd BufNewFile,BufRead *.tornado set filetype=html.tornadotmpl
-autocmd BufNewFile,BufRead *.py set filetype=python
-autocmd BufNewFile,BufRead *.pyx set filetype=cython
-autocmd BufNewFile,BufRead *.css set filetype=css
-autocmd BufNewFile,BufRead *.scss set filetype=scss
-autocmd BufNewFile,BufRead *.po set filetype=po
-autocmd BufNewFile,BufRead *.go set filetype=go
-autocmd BufNewFile,BufRead *.gohtml set filetype=gotplhtml
-autocmd BufNewFile,BufRead *.jinja set filetype=jinja
-autocmd BufNewFile,BufRead *.json set filetype=json
-autocmd BufNewFile,BufRead *.template set filetype=txt
-autocmd BufNewFile,BufRead *.gql set filetype=graphql
-autocmd BufNewFile,BufRead *.graphql set filetype=graphql
-autocmd BufNewFile,BufRead *.proto set filetype=proto
-autocmd BufNewFile,BufRead *.cfg set filetype=haproxy
-autocmd BufNewFile,BufRead *.sql set filetype=sql
-autocmd BufNewFile,BufRead *.yaml set filetype=yaml
-autocmd BufRead,BufNewFile */nginx/*.conf if &ft == '' | setfiletype nginx | endif
-
-" ... for typescript and html/css files is recommended to set 2 spaces.
-" - tabstop answers the question: how many columns of whitespace
-"   is a \t char worth? Think of a set of vertical lines running down
-"   the length of your paper.
-" - shiftwidth answers the question: how many columns of whitespace
-"   a “level of indentation” is worth?
-" - softtabstop answers the question: how many columns of whitespace is
-"   a tab keypress or a backspace keypress worth?
-" - expandtab means that you never wanna see a \t again in your
-"   file — rather, tabs keypresses will be expanded into spaces.
-autocmd FileType json setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
-autocmd FileType html setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
-autocmd FileType markdown setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
-autocmd FileType gotplhtml setlocal shiftwidth=4 tabstop=4
-autocmd FileType html.tornadotmpl setlocal shiftwidth=4 tabstop=4
-autocmd FileType htmldjango setlocal shiftwidth=4 tabstop=4
-autocmd FileType jinja setlocal shiftwidth=4 tabstop=4
-autocmd FileType scss setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
-autocmd FileType css setlocal shiftwidth=4 tabstop=4
-autocmd FileType typescript setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
-autocmd FileType javascript setlocal shiftwidth=4 tabstop=4
-autocmd FileType python setlocal expandtab shiftwidth=4 softtabstop=4
-autocmd FileType sh setlocal shiftwidth=4 tabstop=4
-autocmd FileType make setlocal noexpandtab
-autocmd FileType go setlocal noexpandtab
-autocmd FileType vue setlocal shiftwidth=4 tabstop=4
-autocmd FileType graphql setlocal expandtab shiftwidth=4 softtabstop=4
-autocmd FileType proto setlocal expandtab shiftwidth=4 softtabstop=4
-autocmd FileType haproxy setlocal expandtab shiftwidth=4 softtabstop=4
-autocmd FileType nginx setlocal expandtab shiftwidth=4 softtabstop=4
-autocmd FileType sql setlocal shiftwidth=4 tabstop=4
-autocmd FileType yaml setlocal expandtab tabstop=2 softtabstop=2 shiftwidth=2
-
-
-" TypeScript: see TYPESCRIPT PLUGIN section
-" autocmd BufNewFile,BufRead *.ts set filetype=typescript
-
-" GoLang: see VIM-GO PLUGIN section
-" autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
-
-" When updated the buffer need update syntax highlighting too.
-" This is important when searching in large files.
-function SyncFromStart() abort
-    set lazyredraw " https://vimhelp.org/options.txt.html#%27lazyredraw%27
-    silent execute 'syntax sync fromstart'
-    " execute 'redraw'
-    set nolazyredraw
-endfunction
-autocmd BufEnter,BufWritePost * :call SyncFromStart()
-
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' GLOBAL KEY MAPPING                                                      ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" UNDO/REDO
-" USAGE: Ctrl+Alt+u and Ctrl+Alt+r
-nmap <C-u> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
-nmap <C-r> :echo 'For `Undo` and `Redo` use the `Ctrl+z` and `Ctrl+r` respectively!'<CR>
-
-nmap u :undo<CR>
-imap <C-z> <Esc>:undo<CR>
-nmap <C-z> :undo<CR>
-nnoremap <C-z> <Esc>:undo<CR>
-imap <C-r> <Esc>:redo<CR>
-nmap <C-r> :redo<CR>
-nnoremap <C-r> <Esc>:redo<CR>
-
-
-" COPY/PASTE
-" USAGE: Ctrl+Insert and Shift+Insert or Ctrl+c and Ctrl+v
-vmap <C-Insert> "+y
-vmap <S-Insert> "+p
-vmap <C-c> "+y
-imap <C-c> <ESC> "+y
-vmap <C-v> "+p
-imap <C-v> <ESC> "+p
-
-" SAVE CURRENT FILE
-" USAGE: F2
-imap <F2> <Esc>:w!<CR>
-nmap <F2> :w!<CR>
-
-" OPEN ENCODING MENU
-" USAGE: F8
-set wildmenu
-set wcm=<Tab>
-menu Encoding.utf-8 :e ++enc=utf8 <CR>
-menu Encoding.koi8-r :e ++enc=koi8-r ++ff=unix<CR>
-menu Encoding.windows-1251 :e ++enc=cp1251 ++ff=dos<CR>
-menu Encoding.cp866 :e ++enc=cp866 ++ff=dos<CR>
-menu Encoding.koi8-u :e ++enc=koi8-u ++ff=unix<CR>
-map <F8> :emenu Encoding.<TAB>
-
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' EDIT MODE                                                               ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" SEARCH
-" Ignore upper/lower cases.
-set ignorecase
-set smartcase
-
-""" Highlight found matches and remove backlight when button `Esc` is pressed.
-set hlsearch
-nnoremap <Esc> :noh<return><Esc>
-
-" VISUAL SELECT ALL
-" USAGE: Ctrl+a
-map <C-a> <Esc>ggVG<CR>
