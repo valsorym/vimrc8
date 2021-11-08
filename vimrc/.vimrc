@@ -886,11 +886,8 @@ if $TERM != 'xterm-256color'
     " Reset styles for some elements in active buffer.
     function! s:styleActiveBuffer()
         call s:styleClean()
-
-        " Original from the theme.
-        "hi LineNr cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
         hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
-        hi Cursor cterm=NONE ctermfg=38 ctermbg=38 gui=NONE guifg=NONE guibg=#656565
+        hi Cursor cterm=NONE ctermfg=NONE ctermbg=NONE gui=NONE guifg=NONE guibg=NONE
         hi CursorLine cterm=NONE ctermfg=256 ctermbg=38 gui=NONE guifg=#ffffff guibg=#004663
         hi CursorLineNr cterm=NONE ctermfg=226 ctermbg=38 gui=NONE guifg=#7c8884 guibg=#23343d
         hi Search cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
@@ -899,8 +896,6 @@ if $TERM != 'xterm-256color'
     " Reset styles for some elements in not active buffer.
     function! s:styleNoActiveBuffer()
         call s:styleClean()
-
-        " Not flamboyant style.
         hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
         hi Cursor cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#3f3f3f
         hi CursorLine cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#00202a
