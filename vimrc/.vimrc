@@ -1146,41 +1146,29 @@ augroup END
 "     GoLang: https://github.com/jstemmer/gotags
 " Smart toggle tagbar.
 function! ToggleTagbar()
-    " Disable autofocus force.
-    let g:tagbar_autofocus=0
+    let s:initial_buf=1
 
     " Don't toggle tagbar if cursor is in tagbar or nerdtree buffers.
-    let s:initial_buf=1
-    let s:is_tagbar_buf=stridx(expand('%'), '__Tagbar__') == 0
-    let s:is_nerdtree_buf=stridx(expand('%'), 'NERD_tree_') == 0
-    let s:is_explorer_buf=stridx(bufname('%'), '[BufExplorer]') == 0
-    let s:is_tech_buf=strlen(bufname('%')) == 0 && !&modifiable
-    let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''), 
-                \ '|| [Search') == 0
-
-    if s:is_tagbar_buf 
-                \ || s:is_nerdtree_buf 
-                \ || s:is_explorer_buf
-                \ || s:is_tech_buf
-                \ || s:is_rgrep_buf
+    if IsTechBuffer(expand('%'), 1)
         echomsg 'You can`t open TagBar inside the technical buffers!'
     else
         TagbarToggle
     endif
 
     " Go back to initial buffer.
-    while !exists('s:initial_buf')
-        wincmd w
-    endwhile
+    " Set g:tagbar_autofocus=1
+    "" while !exists('s:initial_buf')
+    ""     wincmd w
+    "" endwhile
     unlet s:initial_buf
 endfunction
 
 nmap <F10> :call ToggleTagbar()<CR>
 
+let g:tagbar_autofocus=1 " 0 - disable autofocus force
 let g:tagbar_width=36
 let g:tagbar_left=0
-let g:tagbar_autofocus=0
-let g:tagbar_compact=1
+let g:tagbar_compact=0
 let g:tagbar_sort=1      " tagbar shows tags in order of they created in file
 let g:tagbar_foldlevel=1 " 0 - close tagbar folds by default
 
