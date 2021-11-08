@@ -297,6 +297,7 @@ let g:NERDTreeCustomOpenArgs = {
 " Doc: https://github.com/preservim/nerdtree/blob/master/plugin/NERD_tree.vim#L99
 let g:NERDTreeMapOpenInTab='<CR>' " def `t` - open file in new tab by ENTER.
 let g:NERDTreeMapOpenExpl='' " def `e`
+nmap t :echom "Hello"
 
 " On startup, always focus file window after startup.
 """ let g:nerdtree_tabs_smart_startup_focus=2
@@ -542,16 +543,6 @@ autocmd QuickFixCmdPost    l* nested lwindow
 
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' GOVIM                                                                   ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" New GoLang development plugin for Vim.
-" DOC:
-"     https://github.com/govim/govim
-""" call govim#config#Set('Gofumpt', 1)
-""" call govim#config#Set('FormatOnSave', 'goimports')
-
-
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' VIM-GO                                                                  ''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " GoLang development plugin for Vim.
@@ -582,9 +573,9 @@ let g:go_fmt_options={
 
 " Info mode.
 " Automatic display of information about the object.
-let g:go_info_mode = 'guru'
-let g:go_auto_type_info = 0 " set 1 to activate auto detect,
-                            " but 1 doesn't work well with NERDTreeSync
+let g:go_info_mode='guru'
+let g:go_auto_type_info=0 " set 1 to activate auto detect,
+                          " but 1 doesn't work well with NERDTreeSync
 
 " Go doc.
 let g:go_doc_keywordprg_enabled=1
@@ -599,14 +590,15 @@ let g:go_highlight_function_calls=1
 
 " Activate linter.
 let g:go_metalinter_autosave = 0 " set 1 to activet autosave
+let g:go_metalinter_autosave_enabled = ['vet', 'golint', 'errcheck', 'test', 'testify']
+
 let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck', 'test', 'testify']
 let g:go_metalinter_deadline = '3s'
-let g:go_metalinter_autosave_enabled = ['vet', 'golint', 'errcheck', 'test', 'testify']
 
 " Stop default mapping.
 let g:go_def_mapping_enabled=0
 
-augroup go
+augroup goGroup
     autocmd!
     " Customization .go files: show by default 4 spaces for a tab.
     autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
