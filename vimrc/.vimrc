@@ -874,38 +874,64 @@ if $TERM != 'xterm-256color'
         au BufEnter,FocusGained * call OnFocus()
     augroup END
 
+    " Clear style for some elements.
+    function s:styleClean()
+        hi clear Cursor
+        hi clear CursorLine
+        hi clear CursorLineNr
+        hi clear LineNr
+        hi clear Search
+    endfunction
+
+    " Reset styles for some elements in active buffer.
+    function! s:styleActiveBuffer()
+        call s:styleClean()
+
+        " Original from the theme.
+        "hi LineNr cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
+        hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
+        hi Cursor cterm=NONE ctermfg=38 ctermbg=38 gui=NONE guifg=NONE guibg=#656565
+        hi CursorLine cterm=NONE ctermfg=256 ctermbg=38 gui=NONE guifg=#ffffff guibg=#004663
+        hi CursorLineNr cterm=NONE ctermfg=226 ctermbg=38 gui=NONE guifg=#7c8884 guibg=#23343d
+        hi Search cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
+    endfunction
+
+    " Reset styles for some elements in not active buffer.
+    function! s:styleNoActiveBuffer()
+        call s:styleClean()
+
+        " Not flamboyant style.
+        hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
+        hi Cursor cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#3f3f3f
+        hi CursorLine cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#00202a
+        hi CursorLineNr cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#003a45
+        hi Search cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
+    endfunction
+
+    " On-focuse event.
     function! OnFocus()
         set lazyredraw
         if IsTechBuffer(bufname('%'), 1)
             setlocal cursorline
-            hi clear CursorLine
-            hi clear Cursor
-            hi clear Search
-
-            hi Cursor cterm=NONE ctermfg=38 ctermbg=38 gui=NONE guifg=NONE guibg=#656565
-            hi CursorLine cterm=bold ctermfg=256 ctermbg=38 gui=bold guifg=#ffffff guibg=#004663
-            hi CursorLineNr cterm=bold ctermfg=226 ctermbg=38 gui=NONE guifg=#7c8884 guibg=#23343d
-            hi Search cterm=bold ctermfg=58 ctermbg=108 gui=bold guifg=NONE guibg=NONE
+            call s:styleActiveBuffer()
         else
-            setlocal cursorline
-            hi clear CursorLine
-            hi clear Cursor
-            hi clear Search
-
-            hi Cursor ctermfg=38 ctermbg=38 cterm=NONE guifg=NONE guibg=#3f3f3f gui=bold 
-            hi CursorLine ctermfg=256 ctermbg=38 cterm=bold guifg=NONE guibg=#00202a gui=bold 
-            hi CursorLineNr ctermfg=256 ctermbg=38 cterm=bold guifg=NONE guibg=#003a45 gui=bold 
-            hi Search cterm=underline guifg=NONE gui=bold guibg=NONE
-            call OnLeave() " uncomment it to hide cursorline in main window
+            setlocal nocursorline
+            call s:styleNoActiveBuffer()
         endif
-        " execute 'redraw'
         set nolazyredraw
     endfunction
 
+    " On-leave event.
     function! OnLeave()
-        if !IsTechBuffer(bufname('%'), 1)
+        set lazyredraw
+        if IsTechBuffer(bufname('%'), 1)
+            setlocal cursorline
+            call s:styleActiveBuffer()
+        else
             setlocal nocursorline
+            call s:styleNoActiveBuffer()
         endif
+        set nolazyredraw
     endfunction
 endif
 """ colorscheme absent-contrast " rainglow/vim
