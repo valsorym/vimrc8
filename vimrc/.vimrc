@@ -185,25 +185,13 @@ if $TERM != 'xterm-256color'
     " and dim cursor color when focus is lost.
     " Main editor buffor has dim cursor color by default and hides the cursor
     " when buffer lost focus.
-    setlocal nocursorline
-    augroup CursorLine
+    augroup changeCursorLineGroup
         au!
-        au BufLeave,FocusLost,WinLeave,CmdwinLeave * call OnLeave()
         au BufEnter,FocusGained,WinEnter,VimEnter,BufWinEnter,CmdwinEnter * call OnFocus()
     augroup END
 
-    " Clear style for some elements.
-    function s:styleClean()
-        hi clear Cursor
-        hi clear CursorLine
-        hi clear CursorLineNr
-        hi clear LineNr
-        hi clear Search
-    endfunction
-
     " Reset styles for some elements in active buffer.
     function! s:styleActiveBuffer()
-        call s:styleClean()
         hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
         hi CursorLineNr cterm=NONE ctermfg=226 ctermbg=38 gui=NONE guifg=#7c8884 guibg=#23343d
         hi Cursor cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#004663
@@ -213,7 +201,6 @@ if $TERM != 'xterm-256color'
 
     " Reset styles for some elements in not active buffer.
     function! s:styleNoActiveBuffer()
-        call s:styleClean()
         hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
         hi CursorLineNr cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#003a45
         hi Cursor cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#3f3f3f
@@ -223,7 +210,7 @@ if $TERM != 'xterm-256color'
 
     " On-focuse event.
     function! OnFocus()
-        set lazyredraw
+        "set lazyredraw
         if IsTechBuffer(bufname('%'), 1)
             setlocal cursorline
             call s:styleActiveBuffer()
@@ -231,20 +218,7 @@ if $TERM != 'xterm-256color'
             setlocal nocursorline
             call s:styleNoActiveBuffer()
         endif
-        set nolazyredraw
-    endfunction
-
-    " On-leave event.
-    function! OnLeave()
-        set lazyredraw
-        if IsTechBuffer(bufname('%'), 1)
-            setlocal cursorline
-            call s:styleActiveBuffer()
-        else
-            setlocal nocursorline
-            call s:styleNoActiveBuffer()
-        endif
-        set nolazyredraw
+        "set nolazyredraw
     endfunction
 endif
 """ colorscheme absent-contrast " rainglow/vim
