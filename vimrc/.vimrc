@@ -287,8 +287,21 @@ set laststatus=2
 set wildmenu
 
 " STATUSLINE
-" STLWordCount returns string as <current word number>/<max words in file>.
-function STLWordCount()
+" Colorize statusline.
+" 1. Add color scheme into vim-theme:
+"   hi STLNormalColor guifg=Black guibg=Green ctermbg=46 ctermfg=0
+"   hi STLInsertColor guifg=Black guibg=Cyan ctermbg=51 ctermfg=0
+"   hi STLReplaceColor guifg=Black guibg=maroon1 ctermbg=165 ctermfg=0
+"   hi STLVisualColor guifg=Black guibg=Orange ctermbg=202 ctermfg=0
+"
+" 2. Use color-scheme:
+"   set statusline+=%#STLNormalColor#%{(mode()=='n')?'\ \ \ ◎\ \ \ ':''}
+"   set statusline+=%#STLInsertColor#%{(mode()=='i')?'\ \ \ ✎\ \ \ ':''}
+"   set statusline+=%#STLReplaceColor#%{(mode()=='R')?'\ \ \ ✎\ \ \ ':''}
+"   set statusline+=%#STLVisualColor#%{(mode()=='v')?'\ \ \ ✎\ \ \ ':''}
+
+" FileWordCount returns string as <current word number>/<words count in file>.
+function FileWordCount()
     let s:word_count=wordcount().words
     if has_key(wordcount(),'visual_words')
         let s:word_count=wordcount().visual_words."/".wordcount().words " count selected words
@@ -298,39 +311,24 @@ function STLWordCount()
     return s:word_count
 endfunction
 
-" STLReadOnly returns string 'r' for readonly file and 'rw' for any.
-function STLReadOnly()
+" FileReadOnly returns string 'r' for readonly file and 'rw' for any.
+function FileReadOnly()
     return &readonly ? "r":"rw" 
 endfunc
 
-" STLGitStatus returns git status. 
+" GitStatus returns git status. 
 " For example:
 "   ⛓ master* - dasn't pushed to origin, master branch with uncommited files.
 "   master* - master branch with uncommited files (pushed commited files);
 "   master - master branch, pushed to origin;
 "   etc...
-" Note: Using STLGitStatus directly in the statusline
-"       will delays the text input. For this reason,
-"       we use global variables to cache the result.
-let g:gitstat_file_path=expand('%')
-let g:gitstat_last_result=''
-augroup GitStatusUpdate
-    autocmd BufWritePost,BufEnter * silent :let g:gitstat_file_path=''
-    autocmd DirChanged global :let g:gitstat_file_path=''
-augroup END
-function STLGitStatus()
-    if expand('%') == g:gitstat_file_path
-        return g:gitstat_last_result
-    endif
-
+function GitStatus()
     " Get git status.
     let s:status=substitute(system('git status -s'), '\n', '  |  ', 'g')
     if s:status=~'not a git repository' 
                 \ || s:status=~'fatal:' 
                 \ || s:status=~'command not found'
-        let g:gitstat_last_result=''
-        let g:gitstat_file_path=expand('%')
-        return g:gitstat_last_result
+        return ''
     endif
 
     " Get current branch.
@@ -347,34 +345,51 @@ function STLGitStatus()
                 \ system('git rev-parse origin/'.s:branch),
                 \ '\n', '', 'g')
 
-    let g:gitstat_last_result=(s:local!=s:origin?'⛓ ':'') . s:branch
+    return (s:local!=s:origin?'⛓ ':'') . s:branch
                 \ . (s:modcount!=0?'*':'')
-    let g:gitstat_file_path=expand('%')
-    return g:gitstat_last_result
 endfunction
 
-set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=
-""" set statusline+=%{(STLWordCount()!='0/0')?'\ Word:\ '.STLWordCount().'\ \｜':''}
-set statusline+=\ Col:\ %c\ \｜
-set statusline+=\ Row:\ %l\/%L\ \(%p%%\)\ \｜
-set statusline+=%{(strlen(&filetype)>0)?'\ '.(&filetype).'\ \｜':''}
-set statusline+=%{(strlen(&filetype)>0)?'\ '.(&encoding).'\ \｜':''}
-""" set statusline+=%{(strlen(&filetype)>0)?'\ '.STLReadOnly().'\ \｜':''}
-set statusline+=%{(STLGitStatus()!='')?'\ '.STLGitStatus().'\ \｜':''}
-set statusline+=\ %{mode()=='n'?'◎':'✎'}\ \ 
+if has("gui_running")
+    " GOI mode.
+    " STLUpdate updates some global variables for stl.
+    let g:git_status='' " git information
+    let g:git_file='' " last file in git-repo that was analyzed
+    function STLUpdate(timer)
+        " Update git status.
+        " Note: Using GitStatus directly in the statusline
+        "       will delays the text input. For this reason,
+        "       we use global variables to cache the result.
+        if expand('%') != g:git_file
+            let g:git_status=GitStatus()
+            let g:git_file=expand('%')
+        endif
+    endfunction
 
-" Colorize statusline.
-" 1. Add color scheme into vim-theme:
-"   hi STLNormalColor guifg=Black guibg=Green ctermbg=46 ctermfg=0
-"   hi STLInsertColor guifg=Black guibg=Cyan ctermbg=51 ctermfg=0
-"   hi STLReplaceColor guifg=Black guibg=maroon1 ctermbg=165 ctermfg=0
-"   hi STLVisualColor guifg=Black guibg=Orange ctermbg=202 ctermfg=0
-"
-" 2. Use color-scheme:
-"   set statusline+=%#STLNormalColor#%{(mode()=='n')?'\ \ \ ◎\ \ \ ':''}
-"   set statusline+=%#STLInsertColor#%{(mode()=='i')?'\ \ \ ✎\ \ \ ':''}
-"   set statusline+=%#STLReplaceColor#%{(mode()=='R')?'\ \ \ ✎\ \ \ ':''}
-"   set statusline+=%#STLVisualColor#%{(mode()=='v')?'\ \ \ ✎\ \ \ ':''}
+    augroup clearSTLGlobals
+        autocmd BufWritePost,BufEnter * silent :let g:git_file=''
+        autocmd DirChanged global :let g:git_file=''
+    augroup END
+
+    call timer_start(3000, 'STLUpdate', {'repeat':-1})
+
+    set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=
+    " set statusline+=%{(strlen(&filetype)>0)?'\ Word:\ '.FileWordCount().'\ \｜':''}
+    set statusline+=\ Col:\ %c\ \｜
+    set statusline+=\ Row:\ %l\/%L\ \(%p%%\)\ \｜
+    set statusline+=%{(strlen(&filetype)>0)?'\ '.(&filetype).'\ \｜':''}
+    set statusline+=%{(strlen(&filetype)>0)?'\ '.(&encoding).'\ \｜':''}
+    " set statusline+=%{(strlen(&filetype)>0)?'\ '.FileReadOnly().'\ \｜':''}
+    set statusline+=%{g:git_status!=''?'\ '.g:git_status.'\ \｜':''}
+    set statusline+=%{mode()=='n'?'\ ◎\ ':'\ ✎\ '}
+else
+    " Terminal mode.
+    set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=
+    set statusline+=\ Col:\ %c\ \｜
+    set statusline+=\ Row:\ %l\/%L\ \(%p%%\)\ \｜
+    set statusline+=%{(strlen(&filetype)>0)?'\ '.(&filetype).'\ \｜':''}
+    set statusline+=%{(strlen(&filetype)>0)?'\ '.(&encoding).'\ \｜':''}
+    set statusline+=%{mode()=='n'?'\ ◎\ ':'\ ✎\ '}
+endif
 
 " BACKSPACE
 " Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert mode:
@@ -465,7 +480,8 @@ nmap <C-Down> :call ScrollQuarter('down')<CR>
 nnoremap <silent> <C-LeftMouse> <LeftMouse>:echom 'Undefined...'<CR>
 
 " http://vimdoc.sourceforge.net/htmldoc/options.html#'mouse'
-set mouse=nicr " no more visual mode from using mouse
+"set mouse=nicr " no more visual mode from using mouse
+set mouse=nvicr
 if has("mouse_sgr")
     set ttymouse=sgr
 else
@@ -988,9 +1004,9 @@ nmap <A-i> :ColorToggle<CR>
 let g:multi_cursor_use_default_mapping=0
 
 " Key mapping.
-let g:multi_cursor_next_key='<C-f>'
-let g:multi_cursor_prev_key='<C-p>'
-let g:multi_cursor_skip_key='<C-s>'
+let g:multi_cursor_next_key='<S-f>'
+let g:multi_cursor_prev_key='<S-p>'
+let g:multi_cursor_skip_key='<S-s>'
 let g:multi_cursor_quit_key='<Esc>'
 
 " Fix bug with deoplete: https://github.com/Shougo/deoplete.nvim/issues/265
