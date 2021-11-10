@@ -28,14 +28,14 @@
 " Debug prints message in ~/.vimdebug.tmp file.
 " Usage:
 "   call s:Debug("Some text for print here...")
-function! s:Debug(message) abort
+function s:Debug(message)
   silent execute '!echo '.a:message.' >> ~/.vimdebug.tmp'
 endfunction
 
 " IsTechBuffer returns true for technical buffers.
 " Usage:
 "   if IsTechBuffer(expand('%')) ...
-function! IsTechBuffer(bufname, modifiable) abort
+function IsTechBuffer(bufname, modifiable)
     let s:is_noname_buf=strlen(a:bufname) == 0
     let s:is_tagbar_buf=stridx(a:bufname, '__Tagbar__') == 0
     let s:is_nerdtree_buf=stridx(a:bufname, 'NERD_tree_') == 0
@@ -195,7 +195,7 @@ if $TERM != 'xterm-256color'
         hi LineNr cterm=NONE ctermfg=30 ctermbg=16 gui=NONE guifg=#5c6574 guibg=#090a17
         hi CursorLineNr cterm=NONE ctermfg=226 ctermbg=38 gui=NONE guifg=#7c8884 guibg=#23343d
         hi Cursor cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#004663
-        hi CursorLine cterm=NONE ctermfg=NONE ctermbg=38 gui=NONE guifg=NONE guibg=#004663
+        hi CursorLine cterm=bold ctermfg=255 ctermbg=38 gui=bold guifg=#eeeeee guibg=#004663
         hi Search cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
     endfunction
 
@@ -1135,25 +1135,26 @@ augroup END
 "
 "     GoLang: https://github.com/jstemmer/gotags
 " Smart toggle tagbar.
-function! ToggleTagbar()
+function ToggleTagbar()
     let s:initial_buf=1
-
+    
     " Don't toggle tagbar if cursor is in tagbar or nerdtree buffers.
     if IsTechBuffer(expand('%'), 1)
         echomsg 'You can`t open TagBar inside the technical buffers!'
     else
         TagbarToggle
     endif
-
+    
     " Go back to initial buffer.
-    " Set g:tagbar_autofocus=1
-    "" while !exists('s:initial_buf')
-    ""     wincmd w
-    "" endwhile
+    " Set g:tagbar_autofocus=0
+    while !exists('s:initial_buf')
+        wincmd w
+    endwhile
     unlet s:initial_buf
 endfunction
 
-nmap <F10> :call ToggleTagbar()<CR>
+nmap <silent> <F10> :call ToggleTagbar()<CR>
+imap <F10> <Esc>:call ToggleTagbar()<CR>
 
 let g:tagbar_autofocus=1 " 0 - disable autofocus force
 let g:tagbar_width=36
