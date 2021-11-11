@@ -374,8 +374,8 @@ if has("gui_running")
 
     set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=
     " set statusline+=%{(strlen(&filetype)>0)?'\ Word:\ '.FileWordCount().'\ \｜':''}
-    set statusline+=\ Col:\ %c\ \｜
-    set statusline+=\ Row:\ %l\/%L\ \(%p%%\)\ \｜
+    set statusline+=\ Col:\ %2c\ \｜
+    set statusline+=\ Row:\ %2l\/%L\ \(%2p%%\)\ \｜
     set statusline+=%{(strlen(&filetype)>0)?'\ '.(&filetype).'\ \｜':''}
     set statusline+=%{(strlen(&filetype)>0)?'\ '.(&encoding).'\ \｜':''}
     " set statusline+=%{(strlen(&filetype)>0)?'\ '.FileReadOnly().'\ \｜':''}
