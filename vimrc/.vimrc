@@ -25,10 +25,10 @@
 "
 " - use the rule to declare new variables.
 
-" Debug prints message in ~/.vimdebug.tmp file.
+" DebugMSG prints message in ~/.vimdebug.tmp file.
 " Usage:
-"   call s:Debug("Some text for print here...")
-function s:Debug(message)
+"   call DebugMSG("Some text for print here...")
+function DebugMSG(message)
   silent execute '!echo '.a:message.' >> ~/.vimdebug.tmp'
 endfunction
 
@@ -175,7 +175,7 @@ endif
 " COLOR SCHEME
 " Editor color scheme.
 syntax on
-set background=dark
+" set background=dark
 colorscheme code
 
 " Change cursorline for gVIM.
@@ -185,9 +185,9 @@ if $TERM != 'xterm-256color'
     " and dim cursor color when focus is lost.
     " Main editor buffor has dim cursor color by default and hides the cursor
     " when buffer lost focus.
-    augroup changeCursorLineGroup
-        au!
-        au BufEnter,FocusGained,WinEnter,VimEnter,BufWinEnter,CmdwinEnter * call OnFocus()
+    augroup updateCursorLine
+        autocmd!
+        autocmd BufEnter,FocusGained,WinEnter,VimEnter,BufWinEnter,CmdwinEnter * call OnFocus()
     augroup END
 
     " Reset styles for some elements in active buffer.
@@ -221,7 +221,6 @@ if $TERM != 'xterm-256color'
         "set nolazyredraw
     endfunction
 endif
-""" colorscheme absent-contrast " rainglow/vim
 
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -353,24 +352,25 @@ if has("gui_running")
     " GOI mode.
     " STLUpdate updates some global variables for stl.
     let g:git_status='' " git information
-    let g:git_file='' " last file in git-repo that was analyzed
+    " let g:git_cwd=getcwd() " last git-repo that was analyzed
     function STLUpdate(timer)
         " Update git status.
         " Note: Using GitStatus directly in the statusline
         "       will delays the text input. For this reason,
         "       we use global variables to cache the result.
-        if expand('%') != g:git_file
-            let g:git_status=GitStatus()
-            let g:git_file=expand('%')
-        endif
+        let g:git_status=GitStatus()
+        "" call DebugMSG("Update git status...")
     endfunction
 
-    augroup clearSTLGlobals
-        autocmd BufWritePost,BufEnter * silent :let g:git_file=''
-        autocmd DirChanged global :let g:git_file=''
+    "" augroup updateSTLGlobals
+    ""     autocmd BufWritePost,BufEnter * silent :let g:git_file=''
+    ""     autocmd DirChanged global :let g:git_file=''
+    "" augroup END
+    "" call timer_start(3000, 'STLUpdate', {'repeat':-1})
+    
+    augroup updateSTLGlobals
+        autocmd BufWritePost,DirChanged * silent :call STLUpdate(0)
     augroup END
-
-    call timer_start(3000, 'STLUpdate', {'repeat':-1})
 
     set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=
     " set statusline+=%{(strlen(&filetype)>0)?'\ Word:\ '.FileWordCount().'\ \｜':''}
@@ -905,10 +905,9 @@ endfunction
 " Auto sync.
 " - BufEnter when the buffer receives focus;
 " - BufWritePost after saving the buffer.
-augroup autocmdNERDTreeSync
+augroup execNERDTreeSync
     autocmd!
-    autocmd BufEnter * :call NERDTreeSync()
-    autocmd BufWritePost * :call NERDTreeSync()
+    autocmd BufEnter,BufWritePost * :call NERDTreeSync()
 augroup END
 
 " Toggle NERDTree.
@@ -1098,7 +1097,7 @@ let g:go_metalinter_deadline = '3s'
 " Stop default mapping.
 let g:go_def_mapping_enabled=0
 
-augroup goGroup
+augroup remappingGoLang
     autocmd!
     " Customization .go files: show by default 4 spaces for a tab.
     autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
@@ -1248,7 +1247,7 @@ let g:matchup_matchparen_timeout = 256
 let g:matchup_matchparen_insert_timeout = 64
 
 nnoremap <C-S-?> :<C-u>MatchupWhereAmI?<cr>
-augroup matchupMatchparenHighlight
+augroup changeMatchupHighlight
     autocmd!
     autocmd ColorScheme * hi MatchParen    cterm=Bold gui=Bold
     autocmd ColorScheme * hi MatchWord     cterm=Bold gui=Bold
@@ -1284,7 +1283,7 @@ let g:sclow_bar_right_offset=-1
 let g:sclow_hide_full_length=1
 
 let g:sclow_sbar_text="\<Space>"
-augroup sclowHighlight
+augroup changeSclowHighlight
     autocmd!
     autocmd ColorScheme * hi SclowSbar ctermbg=245 guibg=#8a8a8a
 augroup END
