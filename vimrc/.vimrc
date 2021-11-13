@@ -40,10 +40,10 @@ function IsTechBuffer(bufname, modifiable)
     let s:is_tagbar_buf=stridx(a:bufname, '__Tagbar__') == 0
     let s:is_nerdtree_buf=stridx(a:bufname, 'NERD_tree_') == 0
     let s:is_explorer_buf=stridx(a:bufname, '[BufExplorer]') == 0
-    let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''), 
+    let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''),
                 \ '|| [Search') == 0
 
-    let s:result=s:is_tagbar_buf 
+    let s:result=s:is_tagbar_buf
                 \ || s:is_nerdtree_buf
                 \ || s:is_explorer_buf
                 \ || s:is_rgrep_buf
@@ -312,10 +312,10 @@ endfunction
 
 " FileReadOnly returns string 'r' for readonly file and 'rw' for any.
 function FileReadOnly()
-    return &readonly ? "r":"rw" 
+    return &readonly ? "r":"rw"
 endfunc
 
-" GitStatus returns git status. 
+" GitStatus returns git status.
 " For example:
 "   ⛓ master* - dasn't pushed to origin, master branch with uncommited files.
 "   master* - master branch with uncommited files (pushed commited files);
@@ -324,8 +324,8 @@ endfunc
 function GitStatus()
     " Get git status.
     let s:status=substitute(system('git status -s'), '\n', '  |  ', 'g')
-    if s:status=~'not a git repository' 
-                \ || s:status=~'fatal:' 
+    if s:status=~'not a git repository'
+                \ || s:status=~'fatal:'
                 \ || s:status=~'command not found'
         return ''
     endif
@@ -352,25 +352,28 @@ if has("gui_running")
     " GOI mode.
     " STLUpdate updates some global variables for stl.
     let g:git_status='' " git information
-    " let g:git_cwd=getcwd() " last git-repo that was analyzed
     function STLUpdate(timer)
         " Update git status.
         " Note: Using GitStatus directly in the statusline
         "       will delays the text input. For this reason,
         "       we use global variables to cache the result.
         let g:git_status=GitStatus()
-        "" call DebugMSG("Update git status...")
     endfunction
 
-    "" augroup updateSTLGlobals
-    ""     autocmd BufWritePost,BufEnter * silent :let g:git_file=''
-    ""     autocmd DirChanged global :let g:git_file=''
-    "" augroup END
-    "" call timer_start(3000, 'STLUpdate', {'repeat':-1})
-    
+    " Update git status automatically by timer.
+    " Note: isn't a bad way.
     augroup updateSTLGlobals
-        autocmd BufWritePost,DirChanged * silent :call STLUpdate(0)
+        autocmd!
+        autocmd DirChanged * silent :call STLUpdate(0)
     augroup END
+    call timer_start(10000, 'STLUpdate', {'repeat':-1}) " every 10 seconds
+
+    "" " Update git status when manipulating a document.
+    "" " Note: slows down file saving.
+    "" augroup updateSTLGlobals
+    ""     autocmd!
+    ""     autocmd BufWritePost,DirChanged * silent :call STLUpdate(0)
+    "" augroup END
 
     set statusline=%<%f\%{(&modified)?'\*\ ':''}%*%=
     " set statusline+=%{(strlen(&filetype)>0)?'\ Word:\ '.FileWordCount().'\ \｜':''}
@@ -781,7 +784,7 @@ let g:NERDTreeIgnore=[
 " Doc: https://github.com/preservim/nerdtree/blob/master/doc/NERDTree.txt#L1283
 " Example:
 " let g:NERDTreeCustomOpenArgs = {
-"             \ 'file':{'reuse':'all', 'where':'t', 'keepopen':1, 'stay':0}, 
+"             \ 'file':{'reuse':'all', 'where':'t', 'keepopen':1, 'stay':0},
 "             \ 'dir':{'where':'', 'reuse':'all', 'keepopen':1, 'stay':1 }
 "         \ }
 let g:NERDTreeCustomOpenArgs = {
@@ -790,7 +793,7 @@ let g:NERDTreeCustomOpenArgs = {
         \ 'where':'t',
         \ 'keepopen':1,
         \ 'stay':0
-    \ }, 
+    \ },
     \ 'dir':{}
 \}
 
@@ -844,7 +847,7 @@ function! NERDTreeSync()
             for i in range(tabpagenr('$'))
                call extend(s:buflist, tabpagebuflist(i+1))
             endfor
-        endif 
+        endif
 
         for i in s:buflist " < need a list
             let s:buf_file_path=fnamemodify(bufname(i), '')
@@ -1136,14 +1139,14 @@ augroup END
 " Smart toggle tagbar.
 function ToggleTagbar()
     let s:initial_buf=1
-    
+
     " Don't toggle tagbar if cursor is in tagbar or nerdtree buffers.
     if IsTechBuffer(expand('%'), 1)
         echomsg 'You can`t open TagBar inside the technical buffers!'
     else
         TagbarToggle
     endif
-    
+
     " Go back to initial buffer.
     " Set g:tagbar_autofocus=0
     while !exists('s:initial_buf')
