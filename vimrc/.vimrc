@@ -360,13 +360,13 @@ if has("gui_running")
         let g:git_status=GitStatus()
     endfunction
 
-    " Update git status automatically by timer.
-    " Note: isn't a bad way.
-    augroup updateSTLGlobals
-        autocmd!
-        autocmd DirChanged * silent :call STLUpdate(0)
-    augroup END
-    call timer_start(10000, 'STLUpdate', {'repeat':-1}) " every 10 seconds
+    "" " Update git status automatically by timer.
+    "" " Note: isn't a bad way.
+    "" augroup updateSTLGlobals
+    ""     autocmd!
+    ""     autocmd DirChanged * silent :call STLUpdate(0)
+    "" augroup END
+    "" call timer_start(10000, 'STLUpdate', {'repeat':-1}) " every 10 seconds
 
     "" " Update git status when manipulating a document.
     "" " Note: slows down file saving.
@@ -624,8 +624,8 @@ set hlsearch
 nnoremap <Esc> :noh<return><Esc>
 
 " VISUAL SELECT ALL
-" USAGE: Ctrl+a
-map <C-a> <Esc>ggVG<CR>
+" USAGE: Ctrl+Alt+a
+map <C-A-a> <Esc>ggVG<CR>
 
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -733,16 +733,16 @@ endif " autocmd
 "'' CLEAR DEBRIS                                                            ''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " Remove trailing blanks.
-" USAGE: <C-x>, a
+" USAGE: <C-A-x>, a
 " DOC:
 "     https://github.com/valsorym/vim-clear
 "
 " Key mapping.
 command -bar -nargs=? ShowSpaces call ShowSpaces(<args>)
 command -bar -nargs=0 -range=% TrimSpaces <line1>,<line2>call TrimSpaces()
-imap <C-x> <Esc>:TrimSpaces<CR>
-nmap <C-x> :TrimSpaces<CR>
-nmap <A-x> :TrimSpaces<CR>
+imap <C-A-x> <Esc>:TrimSpaces<CR>
+nmap <C-A-x> :TrimSpaces<CR>
+"nmap <A-x> :TrimSpaces<CR>
 
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -1252,10 +1252,10 @@ let g:matchup_matchparen_insert_timeout = 64
 nnoremap <C-S-?> :<C-u>MatchupWhereAmI?<cr>
 augroup changeMatchupHighlight
     autocmd!
-    autocmd ColorScheme * hi MatchParen    cterm=Bold gui=Bold
-    autocmd ColorScheme * hi MatchWord     cterm=Bold gui=Bold
-    autocmd ColorScheme * hi MatchParenCur cterm=Bold gui=Bold
-    autocmd ColorScheme * hi MatchWordCur  cterm=Bold gui=Bold
+    autocmd ColorScheme * hi MatchParen    cterm=bold gui=bold
+    autocmd ColorScheme * hi MatchWord     cterm=bold gui=bold
+    autocmd ColorScheme * hi MatchParenCur cterm=bold gui=bold
+    autocmd ColorScheme * hi MatchWordCur  cterm=bold gui=bold
 augroup END
 
 
@@ -1273,6 +1273,7 @@ let g:move_key_modifier='C'
 
 " Do not change of the moved block.
 let g:move_auto_indent=0
+
 
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"

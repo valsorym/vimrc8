@@ -66,7 +66,7 @@ make
 - `C-r` - redo;
 - `A-q` - reconnect the swap file - it helps when working with files through SSHFS, after crash;
 - `A-i` - color highlight toggle;
-- `C-x`, `a` - remove trailing blanks;
+- `C-A-x`, `a` - remove trailing blanks;
 - `C-Up` / `C-Down` - scroll a 30% of the screen up or down;
 - `C-S-?` - show which function we are inside;
 - `%` - jump to the beginning `[%` or end `]%` of a block of code;
@@ -83,7 +83,7 @@ P.s. The other buttons correspond to the parameters by default.
 
 ### Copy & Paste system's clipboard.
 
-- `C-a` - select all (visula mode);
+- `C-A-a` - select all (visula mode);
 - `C-Ins` - copy text selected in visual mode (only in `gvim` or `vim-gtk`);
 - `C-c` - copy text selected in visual mode;
 - `S-Ins` - paste;
