@@ -418,14 +418,18 @@ set nowrap
 
 " INDENT SETTINGS
 " Automatic indentation of newline:
-"     autoindent  copy indent from current line when starting a new line
-"                 (typing <CR> in Insert mode or when using the 'o' or 'O'
-"                 command);
-"     cindent     enables automatic C program indenting;
-"     indentexpr  expression which is evaluated to obtain the proper
-"                 indent for a line.
-set autoindent
+"     autoindent   copy indent from current line when starting a new line
+"                  (typing <CR> in Insert mode or when using the 'o' or 'O'
+"                  command);
+"     smartindent  automatically inserts indentation in some cases;
+"     cindent      like smartindent, but stricter and more customisable;
+"     indentexpr   expression which is evaluated to obtain the proper
+"                  indent for a line.
+"set indentexpr=''
 set indentexpr=''
+set autoindent
+"set smartindent
+"set cindent
 
 " SPECIAL CHAR SETTINGS
 " Display wildcards: tabs and spaces at the end.
@@ -923,6 +927,33 @@ endfunction
 "" nmap <silent> <F9> <plug>NERDTreeTabsToggle<CR>
 nmap <silent> <F9> :call NERDTreeSmartOpen()<CR>
 
+" NERDTreeStopZZ - stops ZZ on NERDTree.
+" If NERDTree is forcibly closed, you need to save and
+" close the main window too.
+function! NERDTreeStopZZ()
+    if IsTechBuffer(expand('%'), 1)
+        let s:buflist=tabpagebuflist(v:lnum)
+        if type(s:buflist) != 3 " not a list
+            let s:buflist=[]
+            for i in range(tabpagenr('$'))
+               call extend(s:buflist, tabpagebuflist(i+1))
+            endfor
+        endif
+
+        for i in s:buflist " < need a list
+            let s:buf_file_path=fnamemodify(bufname(i), '')
+            if bufexists(i) && !IsTechBuffer(s:buf_file_path, 0)
+                call win_gotoid(get(win_findbuf(i), 0))
+                break
+            endif
+        endfor
+        exec ":x"
+    else
+        exec ":x"
+    endif
+endfunction
+
+nnoremap <S-z><S-z> :call NERDTreeStopZZ()<CR>
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' BUFEXPLORER                                                             ''"
