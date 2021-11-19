@@ -856,6 +856,7 @@ function! NERDTreeSync()
         for i in s:buflist " < need a list
             let s:buf_file_path=fnamemodify(bufname(i), '')
             if bufexists(i) && !IsTechBuffer(s:buf_file_path, 0)
+                        \ && bufwinnr(i) >= 0 " buf is visible
                 " The file was probably found.
                 let s:file_path=s:buf_file_path
                 break
@@ -954,6 +955,7 @@ function! NERDTreeStopZZ()
 endfunction
 
 nnoremap <S-z><S-z> :call NERDTreeStopZZ()<CR>
+
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' BUFEXPLORER                                                             ''"
