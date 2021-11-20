@@ -829,6 +829,9 @@ endfunction
 
 " NERDTreeSync synchronizes the selected file with NERDTree.
 function! NERDTreeSync()
+    " Try to determine the name of the directory even if no files are open.
+    let s:flexible=0
+
     " The path isn't synchronized if the cursor is
     " in the Tagbar or NERDTree buffers.
     let s:file_path=expand('%')
@@ -865,7 +868,7 @@ function! NERDTreeSync()
     endif
 
     " Set new value in titlestring.
-    if strlen(s:file_path) > 0
+    if strlen(s:file_path) > 0 || s:flexible
         " Update title of the GUI-window.
         " Add information about current project name.
         try
@@ -879,6 +882,8 @@ function! NERDTreeSync()
 
             if strlen(s:project_name) == 0
                 let s:title=s:file_name
+            elseif strlen(s:file_name) == 0
+                let s:title=toupper(s:project_name)
             endif
 
             " Add path for file if pathe exists.
@@ -917,6 +922,7 @@ augroup execNERDTreeSync
     autocmd!
     autocmd BufEnter,BufWritePost * :call NERDTreeSync()
 augroup END
+call NERDTreeSync()
 
 " Toggle NERDTree.
 " NERDTreeSmartOpen smart open/close NERDTree.
