@@ -918,9 +918,11 @@ endfunction
 " Auto sync.
 " - BufEnter when the buffer receives focus;
 " - BufWritePost after saving the buffer.
+" see more: http://vimdoc.sourceforge.net/htmldoc/autocmd.html
 augroup execNERDTreeSync
     autocmd!
-    autocmd BufEnter,BufWritePost * :call NERDTreeSync()
+    " autocmd BufEnter,BufWritePost * :call NERDTreeSync()
+    autocmd VimEnter,BufCreate,BufWipeout,BufEnter,BufLeave,BufWinEnter,BufWinLeave * :call NERDTreeSync()
 augroup END
 call NERDTreeSync()
 
