@@ -13,7 +13,7 @@
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' SYSTEM                                                                  ''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" Varable prefix:
+" Variable prefix:
 "   buffer-variable    b:     Local to the current buffer.
 "   window-variable    w:     Local to the current window.
 "   tabpage-variable   t:     Local to the current tab page.
