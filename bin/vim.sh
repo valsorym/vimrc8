@@ -1,63 +1,138 @@
 #!/bin/sh
 # VALSORYM/XVIMRC INSTALL
 # Author: valsorym <valsorym.e@gmail.com>
+# This script installs and configures Vim with necessary plugins and dependencies
 
-# Get base directory.
+# Get base directory
 SCRIPT_DIR=`dirname $0`
 cd $SCRIPT_DIR/../
 BASE_DIR=`pwd -P`
 
-# Copy the basic settings.
+echo "Starting Vim configuration setup..."
+
+# Copy the basic settings
+echo "Removing old configuration files..."
 rm -Rf $HOME/.vim \
        $HOME/.vimrc \
        $HOME/.gvimrc
+
+echo "Creating directory structure..."
 mkdir -p $HOME/.vim/bundle
+
+echo "Copying configuration files..."
 cp -Rf $BASE_DIR/vimrc/.vimrc $HOME/.vimrc
 cp -Rf $BASE_DIR/vimrc/.gvimrc $HOME/.gvimrc
 
-# Scan ~/.vimrc and find all plugins that must be installed use vundle.
+# Create CoC configuration directory and copy settings
+mkdir -p $HOME/.vim
+cp -Rf $BASE_DIR/vimrc/coc-settings.json $HOME/.vim/coc-settings.json
+
+# Install Vundle plugins
+echo "Installing Vundle plugins..."
 PLUGINS=`cat $HOME/.vimrc | grep "Plugin '*'" | cut -d"'" -f2`
 for plugin in $PLUGINS
 do
     name=`echo $plugin | cut -d"/" -f2`
-    echo "Processed: $name"
+    echo "Installing plugin: $name"
     git clone https://github.com/${plugin} $HOME/.vim/bundle/$name
 done
 
-# GoLang requirements.
-go install github.com/segmentio/golines@latest
-go install github.com/jstemmer/gotags@latest
-go install golang.org/x/tools/cmd/guru@latest
-### go install mvdan.cc/gofumpt@latest
+# Install system dependencies
+echo "Installing system dependencies..."
+sudo apt update
+sudo apt install -y \
+    vim \
+    vim-gtk3 \
+    python3-pip \
+    python3-neovim \
+    nodejs \
+    npm \
+    curl \
+    wget \
+    unzip \
+    universal-ctags \
+    git
 
-# Install fonts.
-mkdir -p ~/.local/share/fonts && \
-rm -Rf /tmp/editor-code-fonts/ && \
-git clone https://github.com/valsorym/editor-code-fonts \
-  /tmp/editor-code-fonts && \
-cd /tmp/editor-code-fonts/fonts/ && \
-cp ./* ~/.local/share/fonts/
+# Install GoLang tools
+echo "Installing GoLang tools..."
+if command -v go > /dev/null 2>&1; then
+    go install github.com/segmentio/golines@latest
+    go install github.com/jstemmer/gotags@latest
+    go install golang.org/x/tools/cmd/guru@latest
+    # Commented out as noted in original script
+    # go install mvdan.cc/gofumpt@latest
+else
+    echo "Warning: Go is not installed. Skipping Go tools installation."
+fi
 
-# Install and setting plugins.
-pip3 install --user --upgrade pynvim
+# Install Nerd Fonts
+echo "Installing fonts..."
+FONT_DIR="$HOME/.local/share/fonts"
+mkdir -p $FONT_DIR
+TEMP_DIR=$(mktemp -d)
+
+# Install standard code fonts
+echo "Installing editor code fonts..."
+git clone https://github.com/valsorym/editor-code-fonts $TEMP_DIR/editor-code-fonts
+cp $TEMP_DIR/editor-code-fonts/fonts/* $FONT_DIR/
+
+# Install Nerd Fonts - without using arrays (sh compatible)
+echo "Installing Nerd Fonts..."
+# Download and install AdwaitaMono
+echo "Downloading AdwaitaMono..."
+wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/AdwaitaMono.zip" -O "$TEMP_DIR/AdwaitaMono.zip"
+echo "Extracting AdwaitaMono..."
+mkdir -p "$TEMP_DIR/extracted_adwaita"
+unzip -q "$TEMP_DIR/AdwaitaMono.zip" -d "$TEMP_DIR/extracted_adwaita"
+echo "Installing AdwaitaMono fonts..."
+cp $TEMP_DIR/extracted_adwaita/*.ttf $FONT_DIR/ 2>/dev/null || true
+cp $TEMP_DIR/extracted_adwaita/*.otf $FONT_DIR/ 2>/dev/null || true
+
+# Download and install AnonymousPro
+echo "Downloading AnonymousPro..."
+wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/AnonymousPro.zip" -O "$TEMP_DIR/AnonymousPro.zip"
+echo "Extracting AnonymousPro..."
+mkdir -p "$TEMP_DIR/extracted_anonymous"
+unzip -q "$TEMP_DIR/AnonymousPro.zip" -d "$TEMP_DIR/extracted_anonymous"
+echo "Installing AnonymousPro fonts..."
+cp $TEMP_DIR/extracted_anonymous/*.ttf $FONT_DIR/ 2>/dev/null || true
+cp $TEMP_DIR/extracted_anonymous/*.otf $FONT_DIR/ 2>/dev/null || true
+
+# Update font cache
+echo "Updating font cache..."
+fc-cache -f
+
+# Install and configure Vim plugins
+echo "Configuring Vim plugins..."
+
+
+# Compile CoC
+echo "Compiling CoC plugin..."
+cd $HOME/.vim/bundle/coc.nvim && npm ci
+
+# Update and install Vim plugins
+echo "Running plugin updates and installations..."
 vim +PluginUpdate +qall
 vim +GoInstallBinaries +qall
 vim +GoUpdateBinaries +qall
+vim +CocInstall coc-pyright coc-tsserver +qall
 
-# Fix package version.
-# Some packages of the vim evolve too quickly and require a reconfiguration
-# of the vim's main configuration. To ensure that all packages will work
-# correctly, this script rolls back the package's commit to the last
-# working version.
+# Fix package versions
+echo "Fixing package versions for compatibility..."
 
-# Deoplete
-# Starting from the a39f78f commit package has problem:
-cd $HOME/.vim/bundle/deoplete.nvim && git reset --hard 8249a0f
+# Deoplete - fix specific version
+echo "Setting Deoplete to compatible version..."
+cd $HOME/.vim/bundle/deoplete.nvim && git reset --hard 8249a0f 2>/dev/null || echo "Warning: Could not set Deoplete version"
 
-## # NerdTree
-## # In recent versions, when NerdTree is selected, the cursor jumps to the
-## # active file, not allowing you to select a new one (for a few seconds).
-## cd $HOME/.vim/bundle/nerdtree && git reset --hard 1b19089
+# Clean up temporary files
+echo "Cleaning up..."
+rm -rf $TEMP_DIR
 
-echo "Done!"
+echo ""
+echo "Installation complete! Your Vim environment is now ready."
+
+echo ""
+echo "Select default editor: vim-gtk3"
+select-editor
+
 exit 0

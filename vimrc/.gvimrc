@@ -1,6 +1,6 @@
 " VIM 8 CONFIGURATIONS
 " Author:  valsorym <valsorym.e@gmail.com>
-" Copyleft: 2012-2021
+" Copyleft: 2012-2025
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -15,8 +15,11 @@
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " AUTORELOAD
 " Update buffer if file has been modified externally.
-"" set autoread
-"" au FocusGained * :checktime
+set autoread
+au FocusGained * :checktime
+
+set ttyfast
+set ttyscroll=0
 
 " GUI ELEMENTS
 " Disable graphics menu bar, toolbar and right-hand scroll bar.
@@ -37,21 +40,22 @@ endif
 
 " FONT
 " Font style.
+"set guifont=DejaVu\ Sans\ Mono\ 12
 if has("gui_running")
     if has("gui_gtk2")
-        set guifont=Courier\ New\ 13
+        set guifont=Courier\ New\ 14
     elseif has("gui_gtk3")
-        set guifont=Courier\ New\ 13
+        set guifont=Courier\ New\ 14
     elseif has("gui_photon")
-        set guifont=Courier\ New:s13
+        set guifont=Courier\ New:s14
     elseif has("gui_kde")
-        set guifont=Courier\ New/13/-1/5/50/0/0/0/1/0
+        set guifont=Courier\ New/14/-1/5/50/0/0/0/1/0
     elseif has("x11")
         set guifont=-*-Courier\ New-medium-r-normal-*-*-180-*-*-m-*-*
     elseif has("gui_macvim")
-        set gfn=Courier\ New:h13
+        set gfn=Courier\ New:h14
     else
-        set guifont=Courier\ New:h13:cDEFAULT
+        set guifont=DejaVu\ Sans\ Mono\ 12
     endif
 endif
 

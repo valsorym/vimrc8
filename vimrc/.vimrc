@@ -35,23 +35,27 @@ endfunction
 " IsTechBuffer returns true for technical buffers.
 " Usage:
 "   if IsTechBuffer(expand('%')) ...
-function IsTechBuffer(bufname, modifiable)
-    let s:is_noname_buf=strlen(a:bufname) == 0
-    let s:is_tagbar_buf=stridx(a:bufname, '__Tagbar__') == 0
-    let s:is_nerdtree_buf=stridx(a:bufname, 'NERD_tree_') == 0
-    let s:is_explorer_buf=stridx(a:bufname, '[BufExplorer]') == 0
-    let s:is_rgrep_buf=stridx(join(getline(bufname('%'), 1), ''),
-                \ '|| [Search') == 0
+function! IsTechBuffer(bufname, modifiable)
+    let s:is_noname_buf = strlen(a:bufname) == 0
+    let s:is_tagbar_buf = stridx(a:bufname, '__Tagbar__') == 0
+    let s:is_nerdtree_buf = stridx(a:bufname, 'NERD_tree_') == 0
+    let s:is_explorer_buf = stridx(a:bufname, '[BufExplorer]') == 0
 
-    let s:result=s:is_tagbar_buf
-                \ || s:is_nerdtree_buf
-                \ || s:is_explorer_buf
-                \ || s:is_rgrep_buf
+    " Перевірка буфера rgrep потрібно робити без помилок:
+    let s:is_rgrep_buf = 0
+    if bufexists(a:bufname)
+        let l:lines = getbufline(bufname(a:bufname), 1, 1)
+        if len(l:lines) > 0 && l:lines[0] =~# '|| \[Search'
+            let s:is_rgrep_buf = 1
+        endif
+    endif
+
+    let s:result = s:is_tagbar_buf || s:is_nerdtree_buf || s:is_explorer_buf || s:is_rgrep_buf
 
     if a:modifiable
-        let s:result=s:result || (s:is_noname_buf && !&modifiable)
+        let s:result = s:result || (s:is_noname_buf && !&modifiable)
     else
-        let s:result=s:result || s:is_noname_buf
+        let s:result = s:result || s:is_noname_buf
     endif
 
     return s:result
@@ -64,6 +68,21 @@ endfunction
 set shell=/bin/bash
 let s:BASE_DIR=expand("~/.vim")
 
+set t_ti=[?1049h
+set t_te=[?1049l
+
+function! ClearScreenOnExit()
+  set t_ti=[?47h
+  set t_te=[?47l
+endfunction
+
+autocmd BufWinLeave * call ClearScreenOnExit()
+
+" TTY Fixs
+if !has('gui_running')
+    set t_RV=
+    set t_ut=
+endif
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' VUNDLE                                                                  ''"
@@ -115,6 +134,9 @@ Plugin 'valsorym/maxmellon-vim-jsx-pretty', {'name': 'vim-jsx-pretty'} " 'maxmel
 
 Plugin 'valsorym/vim-matchup', {'name': 'vim-matchup'} " 'andymass/vim-matchup'
 Plugin 'valsorym/obcat-vim-sclow', {'name': 'vim-sclow'} " 'obcat/vim-sclow'
+
+" :CocInstall coc-pyright coc-tsserver
+Plugin 'neoclide/coc.nvim', {'branch': 'release'}
 
 call vundle#end()
 filetype plugin indent on
@@ -210,15 +232,15 @@ if $TERM != 'xterm-256color'
 
     " On-focuse event.
     function! OnFocus()
-        "set lazyredraw
-        if IsTechBuffer(bufname('%'), 1)
+        set lazyredraw
+        if IsTechBuffer(expand('%:p'), 1)
             setlocal cursorline
             call s:styleActiveBuffer()
         else
             setlocal nocursorline
             call s:styleNoActiveBuffer()
         endif
-        "set nolazyredraw
+        set nolazyredraw
     endfunction
 endif
 
@@ -439,6 +461,7 @@ set list listchars=tab:»·,trail:·
 " FILE SETTINGS
 "  Automatic refresh of the buffer if an open file is changed.
 set autoread
+au FocusGained * :checktime
 
 " SYSTEM
 "  The length of time Vim waits after you stop typing before it
@@ -484,7 +507,16 @@ nmap <C-Down> :call ScrollQuarter('down')<CR>
 " Left Mouse Click.
 " To change for a specific file, for example GoLang filetype:
 "     autocmd FileType go nmap <buffer> <C-LeftMouse> :<C-u>call go#def#Jump("tab", 0)<CR>
-nnoremap <silent> <C-LeftMouse> <LeftMouse>:echom 'Undefined...'<CR>
+""" nnoremap <silent> <C-LeftMouse> <LeftMouse>:echom 'Undefined...'<CR>
+
+" Disable default Ctrl+LeftMouse globally to avoid conflicts
+nnoremap <silent> <C-LeftMouse> <Nop>
+
+" Allow specific filetypes to define their own Ctrl+LeftMouse behavior
+autocmd FileType python,javascript,typescript,html,css,json,vim nnoremap <buffer> <C-LeftMouse> <LeftMouse><Plug>(coc-definition)
+
+" Fallback for other filetypes
+nnoremap <silent> <C-LeftMouse> <LeftMouse>:echo 'No definition jump available'<CR>
 
 " http://vimdoc.sourceforge.net/htmldoc/options.html#'mouse'
 "set mouse=nicr " no more visual mode from using mouse
@@ -760,82 +792,103 @@ nmap <C-A-x> :TrimSpaces<CR>
 " DOC:
 "     http://www.vim.org/scripts/script.php?script_id=1658
 "     https://github.com/scrooloose/nerdtree
+"     https://github.com/jistr/vim-nerdtree-tabs
 
-" Position and size.
-let g:NERDTreeWinPos='left'
-let g:NERDTreeWinSize=37
+" Position and size
+let g:NERDTreeWinPos = 'left'
+let g:NERDTreeWinSize = 36
 
-" If used NERDTreeFind - find the file in the directory tree is not my root
-" directory (installed as Shift+c). But if set the autochdir the root
-" directory will be changed to the directory where stored the current file.
-""" set autochdir
+" Critical settings for NERDTree as sidebar with tabs support
+let g:NERDTreeQuitOnOpen = 0           " Don't close NERDTree when opening a file
+let g:NERDTreeAutoDeleteBuffer = 1     " Auto delete buffer when file is deleted via NERDTree
+let g:NERDTreeMinimalUI = 1            " Simplified NERDTree interface
+let g:NERDTreeShowHidden = 1           " Show hidden files
+let g:NERDTreeHighlightCursorline = 1  " Enable cursor line highlighting
+
+" Keep NERDTree open across all tabs
+let g:nerdtree_tabs_open_on_console_startup = 1
+let g:nerdtree_tabs_open_on_gui_startup = 1
+let g:nerdtree_tabs_autoclose = 0      " Don't close NERDTree when closing the last tab
+let g:nerdtree_tabs_synchronize_view = 1
+let g:nerdtree_tabs_focus_on_files = 1
+
+" Do not change directory automatically
 set noautochdir
-let g:NERDTreeChDirMode=2
-let g:NERDTreeMapOpenSplit='$'
+let g:NERDTreeChDirMode = 2
+let g:NERDTreeMapOpenSplit = 's'
+let g:NERDTreeMapOpenVSplit = 'v'
 
-""" Ignore files.
-let g:NERDTreeIgnore=[
-    \ '\\.pyc$',
-    \ '\\.swo$',
-    \ '\\.swp$',
-    \ '\\.core$',
-    \ '\\.o$',
-    \ '^_del\\.',
-    \ '^\\.del\\.'
+" Ignore files
+let g:NERDTreeIgnore = [
+    \ '\.pyc$',
+    \ '\.swo$',
+    \ '\.swp$',
+    \ '\.core$',
+    \ '\.o$',
+    \ '^_del\.',
+    \ '^\.del\.'
 \]
 
-" Do not open directory as a file.
-" Doc: https://github.com/preservim/nerdtree/blob/master/doc/NERDTree.txt#L1283
-" Example:
-" let g:NERDTreeCustomOpenArgs = {
-"             \ 'file':{'reuse':'all', 'where':'t', 'keepopen':1, 'stay':0},
-"             \ 'dir':{'where':'', 'reuse':'all', 'keepopen':1, 'stay':1 }
-"         \ }
+" Ensure cursor is visible in NERDTree
+augroup NERDTreeCursor
+    autocmd!
+    autocmd FileType nerdtree setlocal cursorline
+    autocmd FileType nerdtree hi CursorLine ctermbg=236 guibg=#303030
+augroup END
+
+" Disable sign column in NERDTree
+augroup NERDTreeSignColumn
+    autocmd!
+    autocmd FileType nerdtree setlocal signcolumn=no
+augroup END
+
+" Configure NERDTree to open files in tabs
 let g:NERDTreeCustomOpenArgs = {
-    \ 'file':{
-        \ 'reuse':'all',
-        \ 'where':'t',
-        \ 'keepopen':1,
-        \ 'stay':0
+    \ 'file': {
+        \ 'reuse': 'all',
+        \ 'where': 't',
+        \ 'keepopen': 1,
+        \ 'stay': 0
     \ },
-    \ 'dir':{}
+    \ 'dir': {}
 \}
 
-" Change keymap.
-" Doc: https://github.com/preservim/nerdtree/blob/master/plugin/NERD_tree.vim#L99
-let g:NERDTreeMapOpenInTab='<CR>' " def `t` - open file in new tab by ENTER.
-let g:NERDTreeMapOpenExpl='' " def `e`
+" Key mappings
+let g:NERDTreeMapOpenInTab = '<CR>'    " Open file in new tab with Enter
+let g:NERDTreeMapOpenExpl = ''         " Disable default 'e' mapping
+let g:NERDTreeMapOpenSplit = 's'       " Open in split
+let g:NERDTreeMapOpenVSplit = 'v'      " Open in vertical split
 
-" On startup, always focus file window after startup.
-""" let g:nerdtree_tabs_smart_startup_focus=2
-
-" Open NERDTree on console vim startup.
-" Note: sometimes it shows an error in the console!!!
-let g:nerdtree_tabs_open_on_console_startup=1
-
-" Automatically find and select currently opened file in NERDTree.
-" Note: raise an exception if an empty buffer is opened!!!
-""" let g:nerdtree_tabs_autofind=1
-
-" Add Bookmark.
+" Add Bookmark
 imap <C-b> <Esc>:Bookmark<Space>
 nmap <C-b> :Bookmark<Space>
 
-" AUTOMATICALLY SYNC NERDTREE WITH OPENED FILE
-" NERDTreeIsOpen return true if NERDTree is opened.
+" Check if NERDTree is open
 function! NERDTreeIsOpen()
-  return exists('t:NERDTreeBufName') && (bufwinnr(t:NERDTreeBufName) != -1)
+    return exists('t:NERDTreeBufName') && (bufwinnr(t:NERDTreeBufName) != -1)
 endfunction
 
-" NERDTreeSync synchronizes the selected file with NERDTree.
-function! NERDTreeSync()
-    " Try to determine the name of the directory even if no files are open.
-    let s:flexible=0
+" Get NERDTree window number
+function! GetNERDTreeWinNr()
+    if exists('t:NERDTreeBufName')
+        return bufwinnr(t:NERDTreeBufName)
+    endif
+    return -1
+endfunction
 
-    " The path isn't synchronized if the cursor is
-    " in the Tagbar or NERDTree buffers.
-    let s:file_path=expand('%')
-    if NERDTreeIsOpen() && ! IsTechBuffer(s:file_path, 0)
+" Check if current window is NERDTree
+function! IsNERDTreeWindow()
+    return GetNERDTreeWinNr() == winnr()
+endfunction
+
+" NERDTreeSync synchronizes the selected file with NERDTree
+function! NERDTreeSync()
+    if IsNERDTreeWindow()
+        return
+    endif
+
+    let s:file_path = expand('%:p')
+    if NERDTreeIsOpen() && !IsTechBuffer(s:file_path, 0)
         try
             NERDTreeTabsFind
             wincmd p
@@ -843,126 +896,217 @@ function! NERDTreeSync()
         endtry
     endif
 
-    " Update titlestring.
-    " If a buffer with a file is not selected, we need to find
-    " the first buffer with a file and get its name.
+    " Update titlestring
+    if !exists('g:titlestring')
+        let g:titlestring = '%t'
+    endif
     if IsTechBuffer(s:file_path, 0)
-        let s:file_path=""
-        let s:buflist=tabpagebuflist(v:lnum)
-        if type(s:buflist) != 3 " not a list
-            let s:buflist=[]
-            for i in range(tabpagenr('$'))
-               call extend(s:buflist, tabpagebuflist(i+1))
-            endfor
-        endif
-
-        for i in s:buflist " < need a list
-            let s:buf_file_path=fnamemodify(bufname(i), '')
-            if bufexists(i) && !IsTechBuffer(s:buf_file_path, 0)
-                        \ && bufwinnr(i) >= 0 " buf is visible
-                " The file was probably found.
-                let s:file_path=s:buf_file_path
+        let s:file_path = ""
+        let s:buflist = tabpagebuflist()
+        for i in s:buflist
+            let s:buf_file_path = fnamemodify(bufname(i), ':p')
+            if bufexists(i) && !IsTechBuffer(s:buf_file_path, 0) && bufwinnr(i) >= 0
+                let s:file_path = s:buf_file_path
                 break
             endif
         endfor
     endif
 
-    " Set new value in titlestring.
-    if strlen(s:file_path) > 0 || s:flexible
-        " Update title of the GUI-window.
-        " Add information about current project name.
+    if strlen(s:file_path) > 0
         try
-            let s:project_path=g:NERDTree.ForCurrentTab().getRoot().path.str()
-            let s:project_name=fnamemodify(s:project_path, ':t')
-            let s:file_name=fnamemodify(s:file_path, ':t')
-            let s:file_path=substitute(s:file_path, s:file_name, '', '')
-            let s:file_path_len=strlen(s:file_path)
-            let s:file_path_max_len=16
-            let s:title=toupper(s:project_name) . '\ →\ ' . s:file_name
-
+            let s:project_path = g:NERDTree.ForCurrentTab().getRoot().path.str()
+            let s:project_name = fnamemodify(s:project_path, ':t')
+            let s:file_name = fnamemodify(s:file_path, ':t')
+            let s:file_path = substitute(s:file_path, s:file_name, '', '')
+            let s:file_path_len = strlen(s:file_path)
+            let s:file_path_max_len = 16
+            let s:title = toupper(s:project_name) . '\ →\ ' . s:file_name
             if strlen(s:project_name) == 0
-                let s:title=s:file_name
+                let s:title = s:file_name
             elseif strlen(s:file_name) == 0
-                let s:title=toupper(s:project_name)
+                let s:title = toupper(s:project_name)
             endif
-
-            " Add path for file if pathe exists.
             if s:file_path_len > 0 && strpart(s:file_path, 0, 1) != '/'
-                " Shorten the path and replace long prefix with
-                " three dots if path for file too long.
                 if s:file_path_len > s:file_path_max_len + 1
-                    let s:path='...'. strpart(
-                                \ s:file_path,
-                                \ s:file_path_len-s:file_path_max_len,
-                                \ s:file_path_max_len-1)
+                    let s:path = '...' . strpart(s:file_path, s:file_path_len - s:file_path_max_len, s:file_path_max_len - 1)
                 else
-                    let s:path=strpart(s:file_path, 0, s:file_path_len-1)
+                    let s:path = strpart(s:file_path, 0, s:file_path_len - 1)
                 endif
-
-                " Add path in the titlestring line.
-                let s:title=toupper(s:project_name) . '\ →\ ' . s:path
-                            \ . '\ →\ ' . s:file_name
+                let s:title = toupper(s:project_name) . '\ →\ ' . s:path . '\ →\ ' . s:file_name
             endif
-
-            exec 'set titlestring=' . s:title . ' titlelen=79'
+            let &titlestring = s:title
+            let &titlelen = 79
         catch
-            " Set defualt titlestring.
-            exec g:titlestring
+            let &titlestring = g:titlestring
         endtry
     else
-        " Set defualt titlestring.
-        exec g:titlestring
+        let &titlestring = g:titlestring
     endif
 endfunction
 
-" Auto sync.
-" - BufEnter when the buffer receives focus;
-" - BufWritePost after saving the buffer.
-" see more: http://vimdoc.sourceforge.net/htmldoc/autocmd.html
+" Auto sync
 augroup execNERDTreeSync
     autocmd!
-    " autocmd BufEnter,BufWritePost * :call NERDTreeSync()
-    autocmd VimEnter,BufCreate,BufWipeout,BufEnter,BufLeave,BufWinEnter,BufWinLeave * :call NERDTreeSync()
+    autocmd VimEnter,BufCreate,BufWipeout,BufEnter,BufLeave,TabEnter * call NERDTreeSync()
 augroup END
-call NERDTreeSync()
 
-" Toggle NERDTree.
-" NERDTreeSmartOpen smart open/close NERDTree.
-function! NERDTreeSmartOpen()
-    NERDTreeTabsToggle
-endfunction
-
-" Togle NERDTree.
-"" nmap <silent> <F9> <plug>NERDTreeTabsToggle<CR>
-nmap <silent> <F9> :call NERDTreeSmartOpen()<CR>
-
-" NERDTreeStopZZ - stops ZZ on NERDTree.
-" If NERDTree is forcibly closed, you need to save and
-" close the main window too.
-function! NERDTreeStopZZ()
-    if IsTechBuffer(expand('%'), 1)
-        let s:buflist=tabpagebuflist(v:lnum)
-        if type(s:buflist) != 3 " not a list
-            let s:buflist=[]
-            for i in range(tabpagenr('$'))
-               call extend(s:buflist, tabpagebuflist(i+1))
-            endfor
-        endif
-
-        for i in s:buflist " < need a list
-            let s:buf_file_path=fnamemodify(bufname(i), '')
-            if bufexists(i) && !IsTechBuffer(s:buf_file_path, 0)
-                call win_gotoid(get(win_findbuf(i), 0))
-                break
-            endif
-        endfor
-        exec ":x"
+" Toggle NERDTree
+function! NERDTreeSmartToggle()
+    if NERDTreeIsOpen()
+        NERDTreeTabsClose
     else
-        exec ":x"
+        NERDTreeTabsToggle
     endif
 endfunction
 
-nnoremap <S-z><S-z> :call NERDTreeStopZZ()<CR>
+nmap <silent> <F9> :call NERDTreeSmartToggle()<CR>
+imap <silent> <F9> <Esc>:call NERDTreeSmartToggle()<CR>
+
+" Function to close only the current buffer, not the entire window
+function! CloseCurrentBufferOnly()
+    " Store the current buffer and window
+    let l:current_buf = bufnr('%')
+    let l:current_win = winnr()
+
+    " If this is NERDTree window, switch to another window
+    if IsNERDTreeWindow()
+        wincmd p
+        return
+    endif
+
+    " Check if buffer is modified
+    if &modified
+        echo "Buffer is modified. Save first or use :bdelete! to force close."
+        return
+    endif
+
+    " Try to find another buffer to switch to
+    let l:found_alt = 0
+    let l:alt_buffers = []
+
+    " Collect all non-technical buffers
+    for buf in range(1, bufnr('$'))
+        if buflisted(buf) && buf != l:current_buf && bufexists(buf)
+            if !IsTechBuffer(bufname(buf), 0)
+                call add(l:alt_buffers, buf)
+            endif
+        endif
+    endfor
+
+    " If we have alternative buffers, switch to the first one
+    if len(l:alt_buffers) > 0
+        execute 'buffer ' . l:alt_buffers[0]
+        let l:found_alt = 1
+    endif
+
+    " Delete the original buffer
+    if bufexists(l:current_buf)
+        execute 'bdelete ' . l:current_buf
+    endif
+
+    " If no other buffer was found, create a new one
+    if !l:found_alt
+        enew
+        setlocal nomodified
+    endif
+
+    " Make sure NERDTree remains visible if it was open
+    if NERDTreeIsOpen() && winnr('$') == 1
+        NERDTreeFocus
+        wincmd p
+    endif
+    redraw!
+endfunction
+
+" Smart tab closing that keeps NERDTree open
+function! SmartTabClose()
+    " If we're in NERDTree window
+    if IsNERDTreeWindow()
+        " Try to move to a non-NERDTree window
+        wincmd p
+
+        " If we couldn't move (only NERDTree is open)
+        if IsNERDTreeWindow()
+            " If multiple tabs exist, close current tab
+            if tabpagenr('$') > 1
+                tabclose
+            else
+                " Otherwise quit all
+                quitall
+            endif
+        endif
+        return
+    endif
+
+    " Count non-NERDTree windows
+    let l:normal_windows = 0
+    let l:window_count = winnr('$')
+
+    for i in range(1, l:window_count)
+        if getbufvar(winbufnr(i), '&filetype') != 'nerdtree'
+            let l:normal_windows += 1
+        endif
+    endfor
+
+    " If this is the only non-NERDTree window in the current tab
+    if l:normal_windows <= 1
+        " If there are multiple tabs
+        if tabpagenr('$') > 1
+            tabclose
+        else
+            " If multiple buffers exist, try to switch to another
+            call CloseCurrentBufferOnly()
+        endif
+    else
+        " Close only current window
+        quit
+    endif
+endfunction
+
+" Better ZZ behavior with NERDTree - save and close buffer
+function! NERDTreeSmartZZ()
+    " If we're in NERDTree, switch to previous window
+    if IsNERDTreeWindow()
+        wincmd p
+        return
+    endif
+
+    " Save if modified
+    if &modified
+        write
+    endif
+
+    " Close current buffer only
+    call CloseCurrentBufferOnly()
+endfunction
+
+" Overwrite standard commands
+" Map q to SmartTabClose
+nnoremap <silent> q :call CloseCurrentBufferOnly()<CR>
+nnoremap <silent> <Leader>q :call CloseCurrentBufferOnly()<CR>
+
+" Map ZZ to NERDTreeSmartZZ
+nnoremap <silent> ZZ :call NERDTreeSmartZZ()<CR>
+
+" Replace standard q! with forced buffer close
+command! -nargs=0 -bang Q call CloseCurrentBufferOnly()
+command! -nargs=0 -bang QF execute 'bdelete<bang>'
+
+cnoreabbrev q Q
+cnoreabbrev q! Q!
+
+" Prevent NERDTree from becoming the only window
+augroup NERDTreePrevent
+    autocmd!
+    autocmd BufEnter * if (winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree()) | quitall | endif
+augroup END
+
+" Mouse handling in NERDTree
+augroup NERDTreeMouseOpen
+    autocmd!
+    autocmd FileType nerdtree nnoremap <buffer> <LeftMouse> <LeftMouse>:call nerdtree#ui_glue#invokeKeyMap('o')<CR>
+    autocmd FileType nerdtree nnoremap <buffer> <2-LeftMouse> <2-LeftMouse>:call nerdtree#ui_glue#invokeKeyMap('t')<CR>
+augroup END
 
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -1079,10 +1223,257 @@ let g:vim_json_syntax_conceal=0 " 0 - JSON highlighting in raw mode.
 let g:typescript_compiler_binary='tsc'
 let g:typescript_compiler_options=''
 autocmd BufNewFile,BufRead *.ts set filetype=typescript
-"autocmd FileType typescript :set makeprg=tsc
+" autocmd FileType typescript :set makeprg=tsc
 autocmd FileType typescript setlocal formatprg=prettier\ --parser\ typescript
 autocmd QuickFixCmdPost [^l]* nested cwindow
 autocmd QuickFixCmdPost    l* nested lwindow
+
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+"'' PYTHON                                                                  ''"
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" Enable code definition navigation for Python files
+" Allows jumping to function/class definitions with Ctrl+LeftMouse
+
+augroup pythonCodeNavigation
+    autocmd!
+    " Map Ctrl+LeftMouse to jump to definition in Python files
+    autocmd FileType python nnoremap <buffer> <C-LeftMouse> <LeftMouse>:call PythonJumpToDefinition()<CR>
+
+    " Map Ctrl+Alt+j as keyboard alternative for jumping to definition
+    autocmd FileType python nmap <buffer> <C-A-j> :call PythonJumpToDefinition()<CR>
+augroup END
+
+" Function to find and jump to Python definition
+function! PythonJumpToDefinition()
+    " Get the word under cursor
+    let l:word = expand("<cword>")
+    if empty(l:word)
+        echo "No word under cursor"
+        return
+    endif
+
+    " Save current position and view
+    let l:save_pos = getpos(".")
+    let l:save_view = winsaveview()
+
+    " Try to find definition patterns for the word
+    " Create patterns for different Python definition types
+    let l:patterns = [
+        \ '^\s*def\s\+' . l:word . '\s*(',
+        \ '^\s*class\s\+' . l:word . '\b',
+        \ '^\s*async\s\+def\s\+' . l:word . '\s*(',
+        \ '^\s*def\s\+' . l:word . '\s*\[',
+        \ '^\s*self\.' . l:word . '\s*=',
+        \ '^\s*' . l:word . '\s*=\s*\(function\|lambda\|def\)',
+        \ '^\s*' . l:word . '\s*=',
+        \ '^\s*\(\w\+\.\)*' . l:word . '\s*=',
+        \ '^\s*' . l:word . '\s*:\s*',
+        \ '^\s*@property\s*\n\s*def\s\+' . l:word
+    \ ]
+
+    " First try to search from beginning of the file
+    normal! gg
+    for pattern in l:patterns
+        if search(pattern, 'W')
+            " Definition found!
+            normal! zz
+            echo "Found definition for '" . l:word . "'"
+            return
+        endif
+        " Reset cursor to beginning for next pattern
+        normal! gg
+    endfor
+
+    " Special check for class methods
+    let l:method_patterns = [
+        \ '^\s*def\s\+' . l:word . '\s*(self',
+        \ '^\s*async\s\+def\s\+' . l:word . '\s*(self'
+    \ ]
+
+    normal! gg
+    for pattern in l:method_patterns
+        if search(pattern, 'W')
+            " Class method found!
+            normal! zz
+            echo "Found method definition for '" . l:word . "'"
+            return
+        endif
+        " Reset cursor to beginning for next pattern
+        normal! gg
+    endfor
+
+    " If still not found, try a more aggressive search
+    " Find any line that might represent a definition
+    normal! gg
+    let l:aggressive_pattern = '\<' . l:word . '\>.*[=(:)]'
+    if search(l:aggressive_pattern, 'W')
+        let l:line = getline('.')
+        " Check if this looks like a definition
+        if l:line =~ '^\s*\(def\|class\|async\|@\|' . l:word . '\)'
+            normal! zz
+            echo "Found possible definition for '" . l:word . "'"
+            return
+        endif
+    endif
+
+    " Last resort: try to find any appearance of the word in a method or property
+    normal! gg
+    let l:hard_to_find_patterns = [
+        \ '\<self\.' . l:word . '\>\s*[=(]',
+        \ '\<' . l:word . '\>\s*=\s*'
+    \ ]
+
+    for pattern in l:hard_to_find_patterns
+        if search(pattern, 'W')
+            normal! zz
+            echo "Found possible assignment for '" . l:word . "'"
+            return
+        endif
+        normal! gg
+    endfor
+
+    " If still not found, restore position and show message
+    call setpos('.', l:save_pos)
+    call winrestview(l:save_view)
+    echo "Definition for '" . l:word . "' not found in current file"
+endfunction
+
+
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+"'' COC (CONQUER OF COMPLETION)                                              ''
+"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+" Configuration for CoC language server client
+" Provides IDE-like features for multiple languages
+
+" Install CoC extensions automatically
+let g:coc_global_extensions = [
+    \ 'coc-pyright',
+    \ 'coc-json',
+    \ 'coc-yaml',
+    \ 'coc-vimlsp',
+    \ 'coc-html',
+    \ 'coc-css',
+    \ 'coc-tsserver',
+    \ 'coc-snippets',
+    \ 'coc-pairs'
+    \ ]
+
+" Set shorter updatetime for faster completion refresh
+set updatetime=300
+
+" Avoid passing messages to ins-completion-menu
+set shortmess+=c
+
+" Always show sign column for error indicators
+set signcolumn=yes
+
+" Disable type hints being inserted directly into code
+" Відключаємо відображення підказок типів безпосередньо в тексті коду
+call coc#config('suggest.snippetsSupport', v:false)
+call coc#config('suggest.enablePreview', v:false)
+call coc#config('suggest.noselect', v:true)
+call coc#config('suggest.keepCompleteopt', v:true)
+call coc#config('inlayHint.enable', v:false)
+
+" Disable inlay hints for Python
+" Відключаємо вбудовані підказки для Python
+call coc#config('pyright.disableInlayHints', v:true)
+call coc#config('python.inlayHints.enable', v:false)
+
+" Tab: select next item or trigger completion or insert tab
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+" Shift-Tab: select previous item in completion menu
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" Enter: confirm completion item if visible, else insert newline
+" Modified to prevent automatic insertion of type hints
+" Модифіковано, щоб запобігти автоматичній вставці підказок типів
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>"
+
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" Ctrl+Space to manually trigger completion
+inoremap <silent><expr> <c-space> coc#refresh()
+
+" Navigate diagnostics: previous and next
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" Go to definitions and references
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+" Ctrl+LeftMouse jumps to definition in specified filetypes
+autocmd FileType python,javascript,typescript,html,css,json,vim nnoremap <buffer> <C-LeftMouse> <LeftMouse><Plug>(coc-definition)
+
+" Ctrl+Alt+j as keyboard alternative to jump to definition
+autocmd FileType python,javascript,typescript,html,css,json,vim nmap <buffer> <C-A-j> <Plug>(coc-definition)
+
+" Show documentation with K key
+nnoremap <silent> K :call ShowDocumentation()<CR>
+function! ShowDocumentation()
+  if CocAction('hasProvider', 'hover')
+    call CocActionAsync('doHover')
+  else
+    call feedkeys('K', 'in')
+  endif
+endfunction
+
+" Highlight symbol and references on cursor hold
+autocmd CursorHold * silent call CocActionAsync('highlight')
+
+" Rename symbol with F2
+nmap <F2> <Plug>(coc-rename)
+
+" Format selected code or buffer
+xmap <leader>f  <Plug>(coc-format-selected)
+nmap <leader>f  <Plug>(coc-format-selected)
+
+" Apply code actions to selected region
+xmap <leader>a  <Plug>(coc-codeaction-selected)
+nmap <leader>a  <Plug>(coc-codeaction-selected)
+
+" Auto fix current line problems
+nmap <leader>qf  <Plug>(coc-fix-current)
+
+" Add :Format command for formatting buffer
+command! -nargs=0 Format :call CocActionAsync('format')
+
+" Add :Fold command for folding buffer (optional)
+command! -nargs=? Fold :call CocAction('fold', <f-args>)
+
+" Python-specific settings
+" Спеціальні налаштування для Python
+autocmd FileType python call coc#config('python', {
+      \ 'analysis': {
+      \   'typeCheckingMode': 'off',
+      \   'inlayHints': {
+      \     'enable': v:false,
+      \     'variableTypes': v:false,
+      \     'functionReturnTypes': v:false,
+      \     'parameterTypes': v:false
+      \   }
+      \ }
+      \})
+
+" Create a command to toggle inlay hints if you ever need them
+" Створюємо команду для швидкого вмикання/вимикання підказок типів
+command! -nargs=0 ToggleInlayHints call ToggleInlayHints()
+function! ToggleInlayHints()
+  let current = CocAction('getConfig', 'inlayHint.enable')
+  call coc#config('inlayHint.enable', !current)
+  call coc#config('pyright.disableInlayHints', current)
+  echo "Inlay hints " . (!current ? "enabled" : "disabled")
+endfunction
 
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -1316,19 +1707,47 @@ let g:move_key_modifier='C'
 let g:move_auto_indent=0
 
 
-
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' SCROLLBAR                                                               ''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " DOC:
 "     https://github.com/obcat/vim-sclow
+
+" Block scrollbar for specific file types and buffers
 let g:sclow_block_filetypes=['netrw', 'nerdtree']
 let g:sclow_block_buftypes=['terminal', 'prompt']
-let g:sclow_bar_right_offset=-1
-let g:sclow_hide_full_length=1
 
-let g:sclow_sbar_text="\<Space>"
+" Disable scrollbar.
+""" let g:loaded_sclow = 1
+
+" Scrollbar display settings
+let g:sclow_bar_width=1          " Width of the scrollbar
+let g:sclow_bar_right_offset=-1  " Position of the scrollbar
+let g:sclow_hide_full_length=1   " Hide scrollbar when all content is visible
+
+" Use a subtle character for the scrollbar instead of solid line
+let g:sclow_sbar_text="┃"              " Scrollbar character (vertical line)
+
+" Configure scrollbar colors to match your theme
 augroup changeSclowHighlight
     autocmd!
-    autocmd ColorScheme * hi SclowSbar ctermbg=245 guibg=#8a8a8a
+    autocmd ColorScheme * hi SclowSbar ctermbg=NONE ctermfg=240 guibg=NONE guifg=#585858
 augroup END
+
+" Redraw the buffer when the window is scrolled.
+augroup FixScrollArtifacts
+    autocmd!
+    autocmd WinScrolled * call TimerRedraw()
+augroup END
+
+let s:redraw_timer = -1
+function! TimerRedraw() abort
+    if s:redraw_timer != -1
+        call timer_stop(s:redraw_timer)
+    endif
+    let s:redraw_timer = timer_start(1000, {-> execute('redraw!')}) " Time fo redraw
+endfunction
+
+
+
+
