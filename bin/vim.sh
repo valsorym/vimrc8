@@ -3,6 +3,14 @@
 # Author: valsorym <valsorym.e@gmail.com>
 # This script installs and configures Vim with necessary plugins and dependencies
 
+# Set sudo.
+if sudo -v; then
+    echo "Run..."
+else
+    echo "Have no permission to run this script. Please run as root or use sudo."
+    exit 1
+fi
+
 # Get base directory
 SCRIPT_DIR=`dirname $0`
 cd $SCRIPT_DIR/../
@@ -113,9 +121,11 @@ cd $HOME/.vim/bundle/coc.nvim && npm ci
 # Update and install Vim plugins
 echo "Running plugin updates and installations..."
 vim +PluginUpdate +qall
-vim +GoInstallBinaries +qall
-vim +GoUpdateBinaries +qall
 vim +CocInstall coc-pyright coc-tsserver +qall
+vim +Copilot setup +qall
+
+# vim +GoInstallBinaries +qall
+# vim +GoUpdateBinaries +qall
 
 # Fix package versions
 echo "Fixing package versions for compatibility..."

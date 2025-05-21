@@ -1,6 +1,6 @@
 " VIM 8 CONFIGURATIONS
-" Author:  valsorym <valsorym.e@gmail.com>
-" Copyleft: 2012-2021
+" Author: valsorym <valsorym.e@gmail.com>
+" Copyleft: 2012-2025
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -23,7 +23,7 @@
 "   function-argument  a:     Function argument (only inside a function).
 "   vim-variable       v:     Global, predefined by Vim.
 "
-" - use the rule to declare new variables.
+" - Use the rule to declare new variables.
 
 " DebugMSG prints message in ~/.vimdebug.tmp file.
 " Usage:
@@ -41,7 +41,7 @@ function! IsTechBuffer(bufname, modifiable)
     let s:is_nerdtree_buf = stridx(a:bufname, 'NERD_tree_') == 0
     let s:is_explorer_buf = stridx(a:bufname, '[BufExplorer]') == 0
 
-    " Перевірка буфера rgrep потрібно робити без помилок:
+    " Check rgrep buffer needs to be done without errors:
     let s:is_rgrep_buf = 0
     if bufexists(a:bufname)
         let l:lines = getbufline(bufname(a:bufname), 1, 1)
@@ -78,7 +78,7 @@ endfunction
 
 autocmd BufWinLeave * call ClearScreenOnExit()
 
-" TTY Fixs
+" TTY Fixes
 if !has('gui_running')
     set t_RV=
     set t_ut=
@@ -125,7 +125,6 @@ Plugin 'valsorym/elzr-vim-json', {'name': 'vim-json'} " 'elzr/vim-json'
 Plugin 'valsorym/terryma-vim-multiple-cursors', {'name': 'vim-multiple-cursors'} " 'terryma/vim-multiple-cursors'
 
 Plugin 'valsorym/posva-vim-vue', {'name': 'vim-vue'} " 'posva/vim-vue'
-Plugin 'valsorym/fatih-vim-go', {'name': 'vim-go'} " 'fatih/vim-go' or 'govim/govim'
 Plugin 'valsorym/vim-scripts-grep.vim', {'name': 'grep.vim'} " 'vim-scripts/grep.vim'
 Plugin 'valsorym/preservim-tagbar', {'name': 'tagbar'} " 'preservim/tagbar'
 Plugin 'valsorym/herringtondarkholme-yats.vim', {'name': 'yats.vim'} " 'herringtondarkholme/yats.vim'
@@ -133,7 +132,11 @@ Plugin 'valsorym/yuezk-vim-js', {'name': 'vim-js'} " 'yuezk/vim-js'
 Plugin 'valsorym/maxmellon-vim-jsx-pretty', {'name': 'vim-jsx-pretty'} " 'maxmellon/vim-jsx-pretty'
 
 Plugin 'valsorym/vim-matchup', {'name': 'vim-matchup'} " 'andymass/vim-matchup'
-Plugin 'valsorym/obcat-vim-sclow', {'name': 'vim-sclow'} " 'obcat/vim-sclow'
+
+Plugin 'github/copilot.vim', {'name': 'copilot.vim'} " 'github/copilot.vim'
+
+" Plugin 'fatih/vim-go', {'name': 'vim-go'} " 'fatih/vim-go' or 'govim/govim'
+" Plugin 'valsorym/obcat-vim-sclow', {'name': 'vim-sclow'} " 'obcat/vim-sclow'
 
 " :CocInstall coc-pyright coc-tsserver
 Plugin 'neoclide/coc.nvim', {'branch': 'release'}
@@ -160,7 +163,7 @@ set backupdir=/tmp//
 set directory=/tmp//
 
 " INCOMPATIBILITY WITH VI
-" Use the full capabilities of vim without compatibility with vi.
+" Use the full capabilities of Vim without compatibility with vi.
 set nocompatible      " Turn arrows in the mode of INSERT.
 
 nnoremap <silent> <ESC>OA <UP>
@@ -172,9 +175,9 @@ inoremap <silent> <ESC>OB <DOWN>
 inoremap <silent> <ESC>OC <RIGHT>
 inoremap <silent> <ESC>OD <LEFT>
 
-" BIPING
-" Disable beeping (aka 'bell') and window flashing, it's work
-" in the terminal and GUI mode.
+" BEEPING
+" Disable beeping (aka 'bell') and window flashing, it works
+" in both terminal and GUI mode.
 set noerrorbells visualbell t_vb=
 if has('autocmd')
   autocmd GUIEnter * set visualbell t_vb=
@@ -205,8 +208,8 @@ if $TERM != 'xterm-256color'
     " Different cursor styles in different buffers.
     " NERD_tree and Tagbar have a brighter cursor color when buffer is active,
     " and dim cursor color when focus is lost.
-    " Main editor buffor has dim cursor color by default and hides the cursor
-    " when buffer lost focus.
+    " Main editor buffer has dim cursor color by default and hides the cursor
+    " when buffer loses focus.
     augroup updateCursorLine
         autocmd!
         autocmd BufEnter,FocusGained,WinEnter,VimEnter,BufWinEnter,CmdwinEnter * call OnFocus()
@@ -230,17 +233,17 @@ if $TERM != 'xterm-256color'
         hi Search cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
     endfunction
 
-    " On-focuse event.
+    " On-focus event.
     function! OnFocus()
-        set lazyredraw
-        if IsTechBuffer(expand('%:p'), 1)
+        "set lazyredraw
+        if IsTechBuffer(bufname('%'), 1)
             setlocal cursorline
             call s:styleActiveBuffer()
         else
             setlocal nocursorline
             call s:styleNoActiveBuffer()
         endif
-        set nolazyredraw
+        "set nolazyredraw
     endfunction
 endif
 
@@ -249,7 +252,7 @@ endif
 "'' EDITOR                                                                  ''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " CONFIGS
-" UpdateSource updates configurations of vim.
+" UpdateSource updates configurations of Vim.
 function! UpdateSource() abort
     source ~/.vimrc | source ~/.gvimrc
 endfunction
@@ -303,7 +306,7 @@ set showcmd
 " To display the status line always.
 set laststatus=2
 
-" Display typed commands in the statsubar and make autocompletion using
+" Display typed commands in the status bar and make autocompletion using
 " the <Tab> key. Always show the status of open file in the status bar.
 set wildmenu
 
@@ -339,8 +342,8 @@ endfunc
 
 " GitStatus returns git status.
 " For example:
-"   ⛓ master* - dasn't pushed to origin, master branch with uncommited files.
-"   master* - master branch with uncommited files (pushed commited files);
+"   ⛓ master* - hasn't pushed to origin, master branch with uncommitted files.
+"   master* - master branch with uncommitted files (pushed committed files);
 "   master - master branch, pushed to origin;
 "   etc...
 function GitStatus()
@@ -371,19 +374,19 @@ function GitStatus()
 endfunction
 
 if has("gui_running")
-    " GOI mode.
+    " GUI mode.
     " STLUpdate updates some global variables for stl.
     let g:git_status='' " git information
     function STLUpdate(timer)
         " Update git status.
         " Note: Using GitStatus directly in the statusline
-        "       will delays the text input. For this reason,
+        "       will delay text input. For this reason,
         "       we use global variables to cache the result.
         let g:git_status=GitStatus()
     endfunction
 
     "" " Update git status automatically by timer.
-    "" " Note: isn't a bad way.
+    "" " Note: Isn't a bad way.
     "" augroup updateSTLGlobals
     ""     autocmd!
     ""     autocmd DirChanged * silent :call STLUpdate(0)
@@ -391,7 +394,7 @@ if has("gui_running")
     "" call timer_start(10000, 'STLUpdate', {'repeat':-1}) " every 10 seconds
 
     "" " Update git status when manipulating a document.
-    "" " Note: slows down file saving.
+    "" " Note: Slows down file saving.
     "" augroup updateSTLGlobals
     ""     autocmd!
     ""     autocmd BufWritePost,DirChanged * silent :call STLUpdate(0)
@@ -444,7 +447,7 @@ set nowrap
 "                  (typing <CR> in Insert mode or when using the 'o' or 'O'
 "                  command);
 "     smartindent  automatically inserts indentation in some cases;
-"     cindent      like smartindent, but stricter and more customisable;
+"     cindent      like smartindent, but stricter and more customizable;
 "     indentexpr   expression which is evaluated to obtain the proper
 "                  indent for a line.
 "set indentexpr=''
@@ -459,22 +462,22 @@ set autoindent
 set list listchars=tab:»·,trail:·
 
 " FILE SETTINGS
-"  Automatic refresh of the buffer if an open file is changed.
+" Automatic refresh of the buffer if an open file is changed.
 set autoread
 au FocusGained * :checktime
 
 " SYSTEM
-"  The length of time Vim waits after you stop typing before it
-"  triggers the plugin is governed by the setting updatetime.
-"  Defaults == 5000.
-"  Note: The lower the updatetime - the more glitches!
-"        For Vim 7 the value must not be less than 1000 (one thousand)!
+" The length of time Vim waits after you stop typing before it
+" triggers the plugin is governed by the setting updatetime.
+" Defaults == 5000.
+" Note: The lower the updatetime - the more glitches!
+"       For Vim 7 the value must not be less than 1000 (one thousand)!
 if has('gui_running')
     set updatetime=128
 endif
 
 " SCROLL
-" Use Ctrl+Up and Ctrl+Down scroll a 30% of the screen up or down.
+" Use Ctrl+Up and Ctrl+Down to scroll a 30% of the screen up or down.
 function! ScrollQuarter(move)
     let s:height=winheight(0)
     "if a:move == 'up'
@@ -553,7 +556,7 @@ autocmd BufNewFile,BufRead *.sql set filetype=sql
 autocmd BufNewFile,BufRead *.yaml set filetype=yaml
 autocmd BufRead,BufNewFile */nginx/*.conf if &ft == '' | setfiletype nginx | endif
 
-" ... for typescript and html/css files is recommended to set 2 spaces.
+" ... for typescript and html/css files it is recommended to set 2 spaces.
 " - tabstop answers the question: how many columns of whitespace
 "   is a \t char worth? Think of a set of vertical lines running down
 "   the length of your paper.
@@ -744,17 +747,17 @@ nmap <C-S-l> :call MoveTabLast()<CR>
 " 1. Show parent folder + filename.
 " 2. Show only first and last symbol from parent folder + filename.
 " 3. Show only first symbol from parent folder + filename.
-" 4. Show only three first symbol from parent folder + filename.
-" Show only three first symbol from parent folder + filename.
+" 4. Show only three first symbols from parent folder + filename.
+" Show only three first symbols from parent folder + filename.
 set tabline=%!TabName(4)
 
 """ Automatically move the tab to the last position.
 if has('autocmd')
-    " If open a lot of tabs and when the tab is editing - moved tab to last
+    " If open a lot of tabs and when the tab is editing - move tab to last
     " position.
     autocmd InsertEnter * call AutoMoveTabLast()
 
-    " If open new tab - move it on the last position.
+    " If open new tab - move it to the last position.
     autocmd BufNew * call NewTabMoveLast()
 
     " Autoclose duplicate tabs.
@@ -829,11 +832,13 @@ let g:NERDTreeIgnore = [
     \ '^\.del\.'
 \]
 
-" Ensure cursor is visible in NERDTree
+"" Ensure cursor is visible in NERDTree
 augroup NERDTreeCursor
     autocmd!
     autocmd FileType nerdtree setlocal cursorline
-    autocmd FileType nerdtree hi CursorLine ctermbg=236 guibg=#303030
+    autocmd FileType nerdtree hi CursorLine cterm=bold ctermbg=238 ctermfg=255 gui=bold guibg=#444444 guifg=#ffffff
+    autocmd FileType nerdtree hi CursorLineNr cterm=bold ctermbg=238 ctermfg=226 gui=bold guibg=#444444 guifg=#ffff00
+    autocmd FileType nerdtree hi Cursor cterm=NONE ctermbg=NONE gui=NONE guibg=NONE
 augroup END
 
 " Disable sign column in NERDTree
@@ -1109,6 +1114,8 @@ augroup NERDTreeMouseOpen
 augroup END
 
 
+
+
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' BUFEXPLORER                                                             ''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
@@ -1126,14 +1133,14 @@ let g:bufExplorerShowDirectories=0
 let g:bufExplorerShowRelativePath=1
 let g:bufExplorerSplitOutPathName=0
 
-"  Split new window above current
+" Split new window above current
 let g:bufExplorerSplitBelow=0
 
 " Sort by full file path name.
 let g:bufExplorerSortBy='fullpath'
 
 " Open buffer/tab list.
-" OpenBufExplorer open cell BufExplorerHorizontalSplit.
+" OpenBufExplorer opens cell BufExplorerHorizontalSplit.
 function! OpenBufExplorer()
     " Use in editable buffers only.
     if &modifiable && strlen(expand('%')) > 0 && !&diff
@@ -1164,7 +1171,7 @@ endif
 "'' COLORIZER                                                               ''"
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 " Color highlight toggle.
-" Highlights the specific color code in css, for example: #efefef, red etc.
+" Highlights the specific color code in CSS, for example: #efefef, red etc.
 " USAGE: Alt+i
 " DOC:
 "     https://github.com/chrisbra/colorizer
@@ -1182,8 +1189,8 @@ nmap <A-i> :ColorToggle<CR>
 "         Shift-x - ignore the current word and move on to the next;
 "     After selecting all the words, you can start editing:
 "         c - remove word and go into edit mode;
-"         I - set the cursor in the begin of the word;
-"         A - set the cursor in the end of the word.
+"         I - set the cursor in the beginning of the word;
+"         A - set the cursor at the end of the word.
 " DOC:
 "     https://github.com/terryma/vim-multiple-cursors
 
@@ -1265,7 +1272,7 @@ function! PythonJumpToDefinition()
         \ '^\s*async\s\+def\s\+' . l:word . '\s*(',
         \ '^\s*def\s\+' . l:word . '\s*\[',
         \ '^\s*self\.' . l:word . '\s*=',
-        \ '^\s*' . l:word . '\s*=\s*\(function\|lambda\|def\)',
+        \ '^\s*' . l:word . '\s*=s*\(function\|lambda\|def\)',
         \ '^\s*' . l:word . '\s*=',
         \ '^\s*\(\w\+\.\)*' . l:word . '\s*=',
         \ '^\s*' . l:word . '\s*:\s*',
@@ -1369,7 +1376,7 @@ set shortmess+=c
 set signcolumn=yes
 
 " Disable type hints being inserted directly into code
-" Відключаємо відображення підказок типів безпосередньо в тексті коду
+" Disable displaying type hints directly in the code
 call coc#config('suggest.snippetsSupport', v:false)
 call coc#config('suggest.enablePreview', v:false)
 call coc#config('suggest.noselect', v:true)
@@ -1377,7 +1384,7 @@ call coc#config('suggest.keepCompleteopt', v:true)
 call coc#config('inlayHint.enable', v:false)
 
 " Disable inlay hints for Python
-" Відключаємо вбудовані підказки для Python
+" Disable embedded hints for Python
 call coc#config('pyright.disableInlayHints', v:true)
 call coc#config('python.inlayHints.enable', v:false)
 
@@ -1391,7 +1398,7 @@ inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
 
 " Enter: confirm completion item if visible, else insert newline
 " Modified to prevent automatic insertion of type hints
-" Модифіковано, щоб запобігти автоматичній вставці підказок типів
+" Modified to prevent automatic insertion of type hints
 inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>"
 
 function! CheckBackspace() abort
@@ -1431,8 +1438,15 @@ endfunction
 " Highlight symbol and references on cursor hold
 autocmd CursorHold * silent call CocActionAsync('highlight')
 
-" Rename symbol with F2
-nmap <F2> <Plug>(coc-rename)
+" [!] Conflict. Use F2 for svaing.
+" " Rename symbol with F2
+" nmap <F2> <Plug>(coc-rename)
+"
+" hi! CocFloating ctermbg=NONE ctermfg=White guibg=#1f1f1f guifg=White
+" hi! Pmenu ctermbg=236 ctermfg=White guibg=#333333 guifg=White
+" hi! PmenuSel ctermbg=240 ctermfg=Black guibg=#555555 guifg=#ffffff
+" hi! NormalFloat guibg=#1f1f1f guifg=White
+
 
 " Format selected code or buffer
 xmap <leader>f  <Plug>(coc-format-selected)
@@ -1452,7 +1466,7 @@ command! -nargs=0 Format :call CocActionAsync('format')
 command! -nargs=? Fold :call CocAction('fold', <f-args>)
 
 " Python-specific settings
-" Спеціальні налаштування для Python
+" Specific settings for Python
 autocmd FileType python call coc#config('python', {
       \ 'analysis': {
       \   'typeCheckingMode': 'off',
@@ -1466,7 +1480,7 @@ autocmd FileType python call coc#config('python', {
       \})
 
 " Create a command to toggle inlay hints if you ever need them
-" Створюємо команду для швидкого вмикання/вимикання підказок типів
+" Create a command for quick enabling/disabling of type hints
 command! -nargs=0 ToggleInlayHints call ToggleInlayHints()
 function! ToggleInlayHints()
   let current = CocAction('getConfig', 'inlayHint.enable')
@@ -1474,7 +1488,6 @@ function! ToggleInlayHints()
   call coc#config('pyright.disableInlayHints', current)
   echo "Inlay hints " . (!current ? "enabled" : "disabled")
 endfunction
-
 
 "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
 "'' VIM-GO                                                                  ''"
@@ -1488,7 +1501,7 @@ endfunction
 "     Ctrl+Alt+i - show info about object.
 " DOC:
 "     https://github.com/fatih/vim-go
-" Def.
+" Definition.
 let g:go_version_warning=0
 
 " Fmt.
@@ -1500,7 +1513,7 @@ let g:go_fmt_autosave=1 " automatic formatting when saving
 let g:go_fmt_fail_silently=1
 
 """ let g:go_fmt_command='goimports' " classical goimports
-let g:go_fmt_command='golines' " controlling imports and formatting line len
+let g:go_fmt_command='golines' " controlling imports and formatting line length
 let g:go_fmt_options={
     \ 'golines': '-m 79',
     \ }
@@ -1523,7 +1536,7 @@ let g:go_highlight_generate_tags=1
 let g:go_highlight_function_calls=1
 
 " Activate linter.
-let g:go_metalinter_autosave = 0 " set 1 to activet autosave
+let g:go_metalinter_autosave = 0 " set 1 to activate autosave
 let g:go_metalinter_autosave_enabled = ['vet', 'golint', 'errcheck', 'test', 'testify']
 
 let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck', 'test', 'testify']
@@ -1670,7 +1683,7 @@ nmap <A-q> :call ReSwap()<CR>
 "       Ctrl + Shift
 " DOC:
 "       https://github.com/andymass/vim-matchup
-" Search for a closing tag, parenthesis, or word under the crusor.
+" Search for a closing tag, parenthesis, or word under the cursor.
 let g:loaded_matchit = 1
 let g:matchup_matchparen_offscreen = {'method': 'popup'} " 'status', 'status_manual', 'scrolloff'
 
@@ -1703,51 +1716,47 @@ augroup END
 " Key mapping.
 let g:move_key_modifier='C'
 
-" Do not change of the moved block.
+" Do not change indentation of the moved block.
 let g:move_auto_indent=0
 
 
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-"'' SCROLLBAR                                                               ''"
-"'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
-" DOC:
-"     https://github.com/obcat/vim-sclow
-
-" Block scrollbar for specific file types and buffers
-let g:sclow_block_filetypes=['netrw', 'nerdtree']
-let g:sclow_block_buftypes=['terminal', 'prompt']
-
-" Disable scrollbar.
-""" let g:loaded_sclow = 1
-
-" Scrollbar display settings
-let g:sclow_bar_width=1          " Width of the scrollbar
-let g:sclow_bar_right_offset=-1  " Position of the scrollbar
-let g:sclow_hide_full_length=1   " Hide scrollbar when all content is visible
-
-" Use a subtle character for the scrollbar instead of solid line
-let g:sclow_sbar_text="┃"              " Scrollbar character (vertical line)
-
-" Configure scrollbar colors to match your theme
-augroup changeSclowHighlight
-    autocmd!
-    autocmd ColorScheme * hi SclowSbar ctermbg=NONE ctermfg=240 guibg=NONE guifg=#585858
-augroup END
-
-" Redraw the buffer when the window is scrolled.
-augroup FixScrollArtifacts
-    autocmd!
-    autocmd WinScrolled * call TimerRedraw()
-augroup END
-
-let s:redraw_timer = -1
-function! TimerRedraw() abort
-    if s:redraw_timer != -1
-        call timer_stop(s:redraw_timer)
-    endif
-    let s:redraw_timer = timer_start(1000, {-> execute('redraw!')}) " Time fo redraw
-endfunction
-
-
-
-
+" "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" "'' SCROLLBAR                                                               ''"
+" "'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
+" " DOC:
+" "     https://github.com/obcat/vim-sclow
+"
+" " Block scrollbar for specific file types and buffers
+" let g:sclow_block_filetypes=['netrw', 'nerdtree']
+" let g:sclow_block_buftypes=['terminal', 'prompt']
+"
+" " Disable scrollbar.
+" """ let g:loaded_sclow = 1
+"
+" " Scrollbar display settings
+" let g:sclow_bar_width=1          " Width of the scrollbar
+" let g:sclow_bar_right_offset=-1  " Position of the scrollbar
+" let g:sclow_hide_full_length=1   " Hide scrollbar when all content is visible
+"
+" " Use a subtle character for the scrollbar instead of solid line
+" let g:sclow_sbar_text="┃"              " Scrollbar character (vertical line)
+"
+" " Configure scrollbar colors to match your theme
+" augroup changeSclowHighlight
+"     autocmd!
+"     autocmd ColorScheme * hi SclowSbar ctermbg=NONE ctermfg=240 guibg=NONE guifg=#585858
+" augroup END
+"
+" " Redraw the buffer when the window is scrolled.
+" augroup FixScrollArtifacts
+"     autocmd!
+"     autocmd WinScrolled * call TimerRedraw()
+" augroup END
+"
+" let s:redraw_timer = -1
+" function! TimerRedraw() abort
+"     if s:redraw_timer != -1
+"         call timer_stop(s:redraw_timer)
+"     endif
+"     let s:redraw_timer = timer_start(1000, {-> execute('redraw!')}) " Time for redraw
+" endfunction
